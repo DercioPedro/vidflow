@@ -61,6 +61,7 @@ nav button:hover {
     font-weight: bold;
     padding: 8px 20px;
     border-radius: 30px;
+    opacity: 0;
 }
 
 #btnAdmin:hover {

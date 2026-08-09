@@ -4,8 +4,6 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    user-select: none;
-    -webkit-user-select: none;
 }
 
 body {
@@ -33,9 +31,6 @@ header {
     font-size: 24px;
     font-weight: bold;
     color: #ff0033;
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
 nav {
@@ -77,10 +72,6 @@ nav button:hover {
     background: #00cc66;
 }
 
-#btnAdmin.admin-logged:hover {
-    background: #00aa55;
-}
-
 #btnLogout {
     background: #333;
     color: #fff;
@@ -92,15 +83,6 @@ nav button:hover {
     background: #ff0033;
 }
 
-.admin-badge {
-    background: #ff0033;
-    color: #fff;
-    padding: 2px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
 /* Main */
 main {
     max-width: 1200px;
@@ -108,7 +90,7 @@ main {
     padding: 0 20px;
 }
 
-/* Grid de Vídeos */
+/* Grid */
 .video-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -119,13 +101,12 @@ main {
     background: #1a1a1a;
     border-radius: 12px;
     overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
     cursor: pointer;
+    transition: transform 0.3s;
 }
 
 .video-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(255, 0, 51, 0.15);
 }
 
 .video-card video {
@@ -197,7 +178,6 @@ main {
     border-radius: 8px;
     color: #fff;
     font-size: 15px;
-    transition: border 0.3s;
 }
 
 .form-group input:focus,
@@ -223,7 +203,6 @@ main {
     font-size: 17px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s;
     width: 100%;
     margin-top: 10px;
 }
@@ -240,11 +219,38 @@ main {
     border-radius: 30px;
     font-size: 15px;
     cursor: pointer;
-    transition: all 0.3s;
 }
 
 .btn-secondary:hover {
     background: #444;
+}
+
+.btn-download {
+    background: #00cc66;
+    color: #fff;
+    font-weight: bold;
+    padding: 12px 30px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-download:hover {
+    background: #00aa55;
+}
+
+.btn-delete {
+    background: #ff0033;
+    color: #fff;
+    font-weight: bold;
+    padding: 12px 30px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    background: #cc0029;
 }
 
 /* Player */
@@ -253,16 +259,11 @@ main {
     margin: 0 auto;
 }
 
-.video-wrapper {
-    border-radius: 16px;
-    overflow: hidden;
-    background: #000;
-}
-
-.video-wrapper video {
+.player-container video {
     width: 100%;
     max-height: 600px;
-    display: block;
+    border-radius: 16px;
+    background: #000;
 }
 
 .player-container h2 {
@@ -285,33 +286,10 @@ main {
     font-weight: bold;
 }
 
-.player-actions {
+.player-container > div {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
-}
-
-.player-actions .btn-secondary,
-.player-actions .btn-download {
-    flex: 1;
-    min-width: 140px;
-    text-align: center;
-}
-
-.btn-download {
-    background: #00cc66;
-    color: #fff;
-    font-weight: bold;
-    padding: 12px 30px;
-    border-radius: 30px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 15px;
-}
-
-.btn-download:hover {
-    background: #00aa55;
 }
 
 /* Login */
@@ -359,35 +337,39 @@ main {
     border-color: #ff0033;
 }
 
+/* Upload Progress */
+#uploadProgress {
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+#uploadProgress > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #aaa;
+}
+
+#progressBar {
+    height: 8px;
+    background: #ff0033;
+    border-radius: 4px;
+    transition: width 0.3s;
+    width: 0%;
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
     header {
         flex-direction: column;
         padding: 12px 15px;
     }
-
-    .video-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-    }
-    
-    .player-actions {
-        flex-direction: column;
-    }
-    
-    .player-actions .btn-secondary,
-    .player-actions .btn-download {
-        width: 100%;
-    }
-
-    .login-box {
-        padding: 30px 20px;
-        margin: 0 15px;
-    }
-}
-
-@media (max-width: 500px) {
     .video-grid {
         grid-template-columns: 1fr;
+    }
+    .player-container > div {
+        flex-direction: column;
     }
 }

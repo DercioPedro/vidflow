@@ -61,7 +61,6 @@ nav button:hover {
     font-weight: bold;
     padding: 8px 20px;
     border-radius: 30px;
-    opacity: 0;
 }
 
 #btnAdmin:hover {
@@ -84,10 +83,113 @@ nav button:hover {
     background: #ff0033;
 }
 
+/* ============================================
+   VISITANTES AO VIVO - GLOBAL (SEMPRE VISIVEL)
+   ============================================ */
+
+.live-visitors-global {
+    max-width: 1200px;
+    margin: 10px auto 0 auto;
+    padding: 10px 20px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #aaa;
+    font-size: 14px;
+}
+
+.live-dot {
+    width: 10px;
+    height: 10px;
+    background: #00cc66;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+#visitorCountGlobal {
+    color: #00cc66;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.visitor-list {
+    flex: 1;
+    max-height: 50px;
+    overflow-y: auto;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.visitor-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.visitor-list::-webkit-scrollbar-track {
+    background: #222;
+    border-radius: 4px;
+}
+
+.visitor-list::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+.visitor-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    background: #222;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #ccc;
+    white-space: nowrap;
+}
+
+.visitor-item .page {
+    color: #888;
+}
+
+.visitor-item .video-title {
+    color: #ff0033;
+    font-size: 11px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.visitor-item .status-online {
+    color: #00cc66;
+}
+
+.visitor-item .status-offline {
+    color: #666;
+}
+
 /* Main */
 main {
     max-width: 1200px;
-    margin: 30px auto;
+    margin: 20px auto;
     padding: 0 20px;
 }
 
@@ -503,108 +605,30 @@ main {
     background: rgba(255, 0, 51, 0.1);
 }
 
-/* ============================================
-   VISITANTES AO VIVO
-   ============================================ */
-
-.live-visitors {
-    background: #1a1a1a;
-    border-radius: 12px;
-    padding: 15px 20px;
-    margin-top: 20px;
-    border: 1px solid #333;
-}
-
-.live-indicator {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #aaa;
-    font-size: 14px;
-}
-
-.live-dot {
-    width: 10px;
-    height: 10px;
-    background: #00cc66;
-    border-radius: 50%;
-    display: inline-block;
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.2); }
-    100% { opacity: 1; transform: scale(1); }
-}
-
-#visitorCount {
-    color: #00cc66;
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.visitor-list {
-    margin-top: 10px;
-    max-height: 120px;
-    overflow-y: auto;
-}
-
-.visitor-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.visitor-list::-webkit-scrollbar-track {
-    background: #222;
-    border-radius: 4px;
-}
-
-.visitor-list::-webkit-scrollbar-thumb {
-    background: #555;
-    border-radius: 4px;
-}
-
-.visitor-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 0;
-    border-bottom: 1px solid #222;
-    font-size: 13px;
-}
-
-.visitor-item .page {
-    color: #888;
-}
-
-.visitor-item .time {
-    color: #555;
-    font-size: 11px;
-}
-
-.visitor-item .online {
-    color: #00cc66;
-}
-
-.visitor-item .offline {
-    color: #666;
-}
-
-.visitor-item .video-title {
-    color: #ff0033;
-    font-size: 12px;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 /* Responsivo */
 @media (max-width: 768px) {
     header {
         flex-direction: column;
         padding: 12px 15px;
     }
+    
+    .live-visitors-global {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        margin: 10px 10px 0 10px;
+    }
+    
+    .visitor-list {
+        max-height: 80px;
+        gap: 8px;
+    }
+    
+    .visitor-item {
+        font-size: 11px;
+        padding: 2px 8px;
+    }
+    
     .video-grid {
         grid-template-columns: 1fr;
     }
@@ -622,13 +646,5 @@ main {
     .comment-header {
         flex-wrap: wrap;
         gap: 5px;
-    }
-    .visitor-item {
-        font-size: 12px;
-        flex-wrap: wrap;
-        gap: 4px;
-    }
-    .visitor-item .video-title {
-        max-width: 100px;
     }
 }

@@ -1,39 +1,12 @@
 // ============================================
 //  CONFIGURACOES
 // ============================================
-const ADMIN_PASSWORD = 'onde tudo acontece 007';
 let isAdmin = false;
 let currentVideoId = null;
 let videos = [];
 let comments = [];
 
 console.log('script.js carregado!');
-
-// ============================================
-//  PROTECAO - NAO DEIXAR INSPECIONAR
-// ============================================
-
-// Desabilitar console.log para evitar rastreamento
-if (typeof window !== 'undefined') {
-    // Manter apenas para debug do admin
-    const originalLog = console.log;
-    const originalError = console.error;
-    const originalWarn = console.warn;
-    
-    // Sobrescrever apenas se nao for admin
-    setInterval(function() {
-        if (!isAdmin) {
-            console.log = function() {};
-            console.warn = function() {};
-            console.error = function() {};
-        } else {
-            // Restaurar quando admin
-            console.log = originalLog;
-            console.error = originalError;
-            console.warn = originalWarn;
-        }
-    }, 1000);
-}
 
 // ============================================
 //  SUPABASE
@@ -107,6 +80,76 @@ function randomDate() {
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ============================================
+//  VERIFICAR SENHA NO BANCO DE DADOS
+// ============================================
+
+async function verifyAdminPassword(password) {
+    try {
+        // Buscar a senha no banco de dados
+        const { data, error } = await sb
+            .from('admin_config')
+            .select('password')
+            .limit(1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            // Comparar a senha digitada com a do banco
+            return data[0].password === password;
+        } else {
+            // Se nao tiver senha cadastrada, criar uma padrao
+            const defaultPassword = 'admin123';
+            const { error: insertError } = await sb
+                .from('admin_config')
+                .insert([{ password: defaultPassword }]);
+            
+            if (insertError) throw insertError;
+            
+            return password === defaultPassword;
+        }
+    } catch (error) {
+        console.error('Erro ao verificar senha:', error);
+        return false;
+    }
+}
+
+async function updateAdminPassword(newPassword) {
+    try {
+        // Verificar se ja existe registro
+        const { data, error } = await sb
+            .from('admin_config')
+            .select('id')
+            .limit(1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            // Atualizar senha existente
+            const { error: updateError } = await sb
+                .from('admin_config')
+                .update({ password: newPassword })
+                .eq('id', data[0].id);
+            
+            if (updateError) throw updateError;
+        } else {
+            // Criar novo registro
+            const { error: insertError } = await sb
+                .from('admin_config')
+                .insert([{ password: newPassword }]);
+            
+            if (insertError) throw insertError;
+        }
+        
+        alert('Senha alterada com sucesso!');
+        return true;
+    } catch (error) {
+        console.error('Erro ao atualizar senha:', error);
+        alert('Erro ao alterar senha: ' + error.message);
+        return false;
+    }
 }
 
 // ============================================
@@ -515,13 +558,17 @@ commentInput.addEventListener('keydown', function(e) {
 });
 
 // ============================================
-//  LOGIN
+//  LOGIN (COM VERIFICACAO NO BANCO)
 // ============================================
 
-loginForm.addEventListener('submit', function(e) {
+loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const password = adminPassword.value;
-    if (password === ADMIN_PASSWORD) {
+    
+    // Verificar senha no banco de dados
+    const isValid = await verifyAdminPassword(password);
+    
+    if (isValid) {
         loginAdmin();
         document.getElementById('uploadForm').reset();
         uploadFile.value = '';

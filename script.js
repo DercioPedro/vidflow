@@ -130,7 +130,6 @@ function renderVideos() {
         videoGrid.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 60px 0;">
                 <h3>Nenhum video disponivel</h3>
-                <p>Clique em "Admin" para publicar!</p>
             </div>
         `;
         return;

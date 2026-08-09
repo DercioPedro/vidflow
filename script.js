@@ -9,7 +9,13 @@ let videos = [];
 // ============================================
 //  REFERÊNCIAS DO SUPABASE
 // ============================================
-const supabase = window.supabase.createClient('https://gnlixbzycebqvzxpcemx.supabase.co/rest/v1/', eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA);
+// ⚠️ Isso já foi inicializado no HTML, mas vamos garantir
+const supabase = window.supabase.createClient(
+    'https://gnlixbzycebqvzxpcemx.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA'
+);
+
+console.log('🔷 Supabase inicializado no script');
 
 // ============================================
 //  ELEMENTOS DOM
@@ -66,13 +72,17 @@ function randomDate() {
 async function loadVideos() {
     try {
         loadingIndicator.style.display = 'block';
+        loadingIndicator.innerHTML = '<h3>⏳ Carregando vídeos...</h3>';
         
         const { data, error } = await supabase
             .from('videos')
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro Supabase:', error);
+            throw error;
+        }
         
         videos = data.map(video => ({
             id: video.id,
@@ -117,7 +127,10 @@ async function saveVideoToSupabase(title, description, category, file) {
                 upsert: false
             });
         
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+            console.error('Erro upload:', uploadError);
+            throw uploadError;
+        }
         
         // 4. Atualizar progresso
         progressBar.style.width = '70%';
@@ -145,7 +158,10 @@ async function saveVideoToSupabase(title, description, category, file) {
             .insert([videoData])
             .select();
         
-        if (insertError) throw insertError;
+        if (insertError) {
+            console.error('Erro insert:', insertError);
+            throw insertError;
+        }
         
         // 7. Adicionar à lista local
         const newVideo = insertData[0];
@@ -207,7 +223,10 @@ async function deleteVideoFromSupabase(videoId) {
             .delete()
             .eq('id', videoId);
         
-        if (dbError) throw dbError;
+        if (dbError) {
+            console.error('Erro delete:', dbError);
+            throw dbError;
+        }
         
         // 5. Remover da lista local
         videos = videos.filter(v => v.id !== videoId);

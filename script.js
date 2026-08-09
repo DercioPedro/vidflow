@@ -1,7 +1,7 @@
 // ============================================
 //  CONFIGURACOES
 // ============================================
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_PASSWORD = 'onde tudo acontece 007';
 let isAdmin = false;
 let currentVideoId = null;
 let videos = [];

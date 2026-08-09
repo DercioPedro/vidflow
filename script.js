@@ -17,6 +17,136 @@ const sb = window.supabase.createClient(
 );
 
 // ============================================
+//  SISTEMA DE VISITANTES AO VIVO
+// ============================================
+
+// Gerar ID de sessao unico
+function generateSessionId() {
+    let sessionId = localStorage.getItem('visitor_session_id');
+    if (!sessionId) {
+        sessionId = 'visitor_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('visitor_session_id', sessionId);
+    }
+    return sessionId;
+}
+
+const SESSION_ID = generateSessionId();
+let lastVisitorUpdate = 0;
+let visitorUpdateInterval = null;
+
+// Registrar visitante
+async function registerVisitor(page, videoId = null) {
+    try {
+        const now = Date.now();
+        if (now - lastVisitorUpdate < 10000) return;
+        lastVisitorUpdate = now;
+        
+        const visitorData = {
+            session_id: SESSION_ID,
+            page: page,
+            video_id: videoId,
+            last_activity: new Date().toISOString(),
+            user_agent: navigator.userAgent.substring(0, 200)
+        };
+        
+        const { data: existing, error: findError } = await sb
+            .from('live_visitors')
+            .select('id')
+            .eq('session_id', SESSION_ID)
+            .limit(1);
+        
+        if (findError) throw findError;
+        
+        if (existing && existing.length > 0) {
+            await sb.from('live_visitors')
+                .update({
+                    page: page,
+                    video_id: videoId,
+                    last_activity: new Date().toISOString()
+                })
+                .eq('session_id', SESSION_ID);
+        } else {
+            await sb.from('live_visitors').insert([visitorData]);
+        }
+    } catch (error) {
+        // Silencioso
+    }
+}
+
+// Buscar visitantes ao vivo
+async function getLiveVisitors() {
+    try {
+        const { data, error } = await sb
+            .from('live_visitors')
+            .select('*')
+            .order('last_activity', { ascending: false });
+        
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        return [];
+    }
+}
+
+// Atualizar lista de visitantes
+async function updateLiveVisitors() {
+    try {
+        const visitors = await getLiveVisitors();
+        const activeVisitors = visitors.filter(v => {
+            const lastActivity = new Date(v.last_activity);
+            const now = new Date();
+            return (now - lastActivity) < 300000;
+        });
+        
+        const visitorCount = document.getElementById('visitorCount');
+        if (visitorCount) {
+            visitorCount.textContent = activeVisitors.length;
+        }
+        
+        const visitorList = document.getElementById('visitorList');
+        if (visitorList) {
+            if (activeVisitors.length === 0) {
+                visitorList.innerHTML = '<p style="color: #666; font-size: 12px;">Nenhum visitante online</p>';
+                return;
+            }
+            
+            visitorList.innerHTML = activeVisitors.map(v => {
+                const isOnline = (new Date() - new Date(v.last_activity)) < 60000;
+                const status = isOnline ? '🟢' : '🟡';
+                const page = v.page === 'home' ? '🏠 Home' : '🎬 Video';
+                const videoTitle = v.video_id ? videos.find(vid => vid.id === v.video_id)?.title || '' : '';
+                
+                return `
+                    <div class="visitor-item">
+                        <span class="page">${page}</span>
+                        ${videoTitle ? `<span class="video-title">${videoTitle.substring(0, 20)}...</span>` : ''}
+                        <span class="time">${status}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        // Silencioso
+    }
+}
+
+// Iniciar atualizacao de visitantes
+function startVisitorUpdates() {
+    if (visitorUpdateInterval) {
+        clearInterval(visitorUpdateInterval);
+    }
+    visitorUpdateInterval = setInterval(updateLiveVisitors, 10000);
+    updateLiveVisitors();
+}
+
+function stopVisitorUpdates() {
+    if (visitorUpdateInterval) {
+        clearInterval(visitorUpdateInterval);
+        visitorUpdateInterval = null;
+    }
+}
+
+// ============================================
 //  FUNCAO PARA LIMPAR NOME DO ARQUIVO
 // ============================================
 
@@ -88,7 +218,6 @@ function formatDate(dateString) {
 
 async function verifyAdminPassword(password) {
     try {
-        // Buscar a senha no banco de dados
         const { data, error } = await sb
             .from('admin_config')
             .select('password')
@@ -97,57 +226,18 @@ async function verifyAdminPassword(password) {
         if (error) throw error;
         
         if (data && data.length > 0) {
-            // Comparar a senha digitada com a do banco
             return data[0].password === password;
         } else {
-            // Se nao tiver senha cadastrada, criar uma padrao
             const defaultPassword = 'admin123';
             const { error: insertError } = await sb
                 .from('admin_config')
                 .insert([{ password: defaultPassword }]);
             
             if (insertError) throw insertError;
-            
             return password === defaultPassword;
         }
     } catch (error) {
         console.error('Erro ao verificar senha:', error);
-        return false;
-    }
-}
-
-async function updateAdminPassword(newPassword) {
-    try {
-        // Verificar se ja existe registro
-        const { data, error } = await sb
-            .from('admin_config')
-            .select('id')
-            .limit(1);
-        
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-            // Atualizar senha existente
-            const { error: updateError } = await sb
-                .from('admin_config')
-                .update({ password: newPassword })
-                .eq('id', data[0].id);
-            
-            if (updateError) throw updateError;
-        } else {
-            // Criar novo registro
-            const { error: insertError } = await sb
-                .from('admin_config')
-                .insert([{ password: newPassword }]);
-            
-            if (insertError) throw insertError;
-        }
-        
-        alert('Senha alterada com sucesso!');
-        return true;
-    } catch (error) {
-        console.error('Erro ao atualizar senha:', error);
-        alert('Erro ao alterar senha: ' + error.message);
         return false;
     }
 }
@@ -428,6 +518,8 @@ function openPlayer(id) {
     pageUpload.style.display = 'none';
     pagePlayer.style.display = 'block';
 
+    // Registrar visitante no player
+    registerVisitor('player', id);
     loadComments(id);
 }
 
@@ -467,6 +559,7 @@ btnHome.addEventListener('click', () => {
     btnDownload.style.display = 'none';
     btnDelete.style.display = 'none';
     playerVideo.pause();
+    registerVisitor('home', null);
     loadVideos();
 });
 
@@ -508,6 +601,7 @@ btnBack.addEventListener('click', () => {
     btnDownload.style.display = 'none';
     btnDelete.style.display = 'none';
     playerVideo.pause();
+    registerVisitor('home', null);
     loadVideos();
 });
 
@@ -565,7 +659,6 @@ loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const password = adminPassword.value;
     
-    // Verificar senha no banco de dados
     const isValid = await verifyAdminPassword(password);
     
     if (isValid) {
@@ -636,7 +729,30 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ============================================
+//  LIMPAR VISITANTE AO FECHAR
+// ============================================
+
+window.addEventListener('beforeunload', function() {
+    sb.from('live_visitors')
+        .delete()
+        .eq('session_id', SESSION_ID)
+        .then(() => {
+            console.log('Visitante removido');
+        })
+        .catch(() => {});
+});
+
+// ============================================
 //  INICIALIZAR
 // ============================================
 
+// Registrar visitante na home
+registerVisitor('home', null);
+
+// Iniciar atualizacao de visitantes
+startVisitorUpdates();
+
+// Carregar videos
 loadVideos();
+
+console.log('Sistema de visitantes ao vivo ativado!');

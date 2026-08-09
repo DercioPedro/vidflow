@@ -1,15 +1,9 @@
-// ============================================
-//  CONFIGURAÇÕES
-// ============================================
 const ADMIN_PASSWORD = 'admin123';
 let isAdmin = false;
 let currentVideoId = null;
 let videos = [];
 
-// ============================================
-//  REFERÊNCIAS DO SUPABASE
-// ============================================
-// ⚠️ Isso já foi inicializado no HTML, mas vamos garantir
+
 const supabase = window.supabase.createClient(
     'https://gnlixbzycebqvzxpcemx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA'

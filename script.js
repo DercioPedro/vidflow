@@ -9,14 +9,15 @@ let videos = [];
 console.log('📄 script.js carregado!');
 
 // ============================================
-//  SUPABASE - DECLARADO APENAS AQUI
+//  SUPABASE - USANDO NOME DIFERENTE
+//  ⚠️ Mudei de 'supabase' para 'sb' para evitar conflito
 // ============================================
-const supabase = window.supabase.createClient(
+const sb = window.supabase.createClient(
     'https://gnlixbzycebqvzxpcemx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA'
 );
 
-console.log('🔷 Supabase conectado no script!');
+console.log('🔷 Supabase conectado!');
 
 // ============================================
 //  ELEMENTOS DOM
@@ -75,7 +76,7 @@ async function loadVideos() {
         console.log('📥 Carregando vídeos...');
         loadingIndicator.style.display = 'block';
         
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('videos')
             .select('*')
             .order('created_at', { ascending: false });
@@ -187,7 +188,7 @@ async function saveVideoToSupabase(title, description, category, file) {
         
         const fileName = `${generateSecureId()}_${file.name}`;
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await sb.storage
             .from('videos')
             .upload(fileName, file);
         
@@ -196,7 +197,7 @@ async function saveVideoToSupabase(title, description, category, file) {
         progressBar.style.width = '70%';
         progressPercent.textContent = '70%';
         
-        const { data: urlData } = supabase.storage.from('videos').getPublicUrl(fileName);
+        const { data: urlData } = sb.storage.from('videos').getPublicUrl(fileName);
         const downloadURL = urlData.publicUrl;
         
         const videoData = {
@@ -207,7 +208,7 @@ async function saveVideoToSupabase(title, description, category, file) {
             date: randomDate()
         };
         
-        const { data: insertData, error: insertError } = await supabase
+        const { data: insertData, error: insertError } = await sb
             .from('videos')
             .insert([videoData])
             .select();
@@ -250,10 +251,10 @@ async function deleteVideoFromSupabase(videoId) {
     const fileName = urlParts[urlParts.length - 1];
     
     if (fileName) {
-        await supabase.storage.from('videos').remove([fileName]);
+        await sb.storage.from('videos').remove([fileName]);
     }
     
-    await supabase.from('videos').delete().eq('id', videoId);
+    await sb.from('videos').delete().eq('id', videoId);
     
     videos = videos.filter(v => v.id !== videoId);
     renderVideos();

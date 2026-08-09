@@ -10,14 +10,38 @@ let comments = [];
 console.log('script.js carregado!');
 
 // ============================================
+//  PROTECAO - NAO DEIXAR INSPECIONAR
+// ============================================
+
+// Desabilitar console.log para evitar rastreamento
+if (typeof window !== 'undefined') {
+    // Manter apenas para debug do admin
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalWarn = console.warn;
+    
+    // Sobrescrever apenas se nao for admin
+    setInterval(function() {
+        if (!isAdmin) {
+            console.log = function() {};
+            console.warn = function() {};
+            console.error = function() {};
+        } else {
+            // Restaurar quando admin
+            console.log = originalLog;
+            console.error = originalError;
+            console.warn = originalWarn;
+        }
+    }, 1000);
+}
+
+// ============================================
 //  SUPABASE
 // ============================================
 const sb = window.supabase.createClient(
     'https://gnlixbzycebqvzxpcemx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA'
 );
-
-console.log('Supabase conectado!');
 
 // ============================================
 //  FUNCAO PARA LIMPAR NOME DO ARQUIVO
@@ -65,8 +89,6 @@ const commentAnonymous = document.getElementById('commentAnonymous');
 const btnSendComment = document.getElementById('btnSendComment');
 const commentsList = document.getElementById('commentsList');
 
-console.log('Elementos DOM carregados');
-
 // ============================================
 //  FUNCOES GERAIS
 // ============================================
@@ -93,7 +115,6 @@ function formatDate(dateString) {
 
 async function loadVideos() {
     try {
-        console.log('Carregando videos...');
         loadingIndicator.style.display = 'block';
         
         const { data, error } = await sb
@@ -114,9 +135,7 @@ async function loadVideos() {
         
         renderVideos();
         loadingIndicator.style.display = 'none';
-        console.log(videos.length + ' videos carregados');
     } catch (error) {
-        console.error('Erro:', error);
         loadingIndicator.innerHTML = `
             <h3>Erro ao carregar videos</h3>
             <p style="color: #888;">${error.message}</p>
@@ -208,7 +227,6 @@ async function saveVideoToSupabase(title, description, category, file) {
         
         return newVideo.id;
     } catch (error) {
-        console.error('Erro ao salvar:', error);
         uploadProgress.style.display = 'none';
         throw error;
     }
@@ -261,7 +279,6 @@ async function loadComments(videoId) {
         comments = data;
         renderComments();
     } catch (error) {
-        console.error('Erro ao carregar comentarios:', error);
         commentsList.innerHTML = '<p style="color: #888;">Erro ao carregar comentarios</p>';
     }
 }
@@ -325,10 +342,7 @@ async function sendComment(videoId, content, isAnonymous) {
         await loadComments(videoId);
         commentInput.value = '';
         commentAnonymous.checked = false;
-        
-        console.log('Comentario enviado!');
     } catch (error) {
-        console.error('Erro ao enviar comentario:', error);
         alert('Erro ao enviar comentario: ' + error.message);
     }
 }
@@ -339,9 +353,7 @@ async function deleteComment(commentId) {
     try {
         await sb.from('comments').delete().eq('id', commentId);
         await loadComments(currentVideoId);
-        console.log('Comentario excluido!');
     } catch (error) {
-        console.error('Erro ao excluir comentario:', error);
         alert('Erro ao excluir comentario');
     }
 }
@@ -580,7 +592,4 @@ document.addEventListener('keydown', function(e) {
 //  INICIALIZAR
 // ============================================
 
-console.log('Inicializando VidFlow...');
 loadVideos();
-console.log('VidFlow pronto!');
-console.log('Pressione Ctrl+Shift+A para acessar o admin');

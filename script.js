@@ -9,7 +9,7 @@ let videos = [];
 // ============================================
 //  REFERÊNCIAS DO SUPABASE
 // ============================================
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient('https://gnlixbzycebqvzxpcemx.supabase.co/rest/v1/', eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA);
 
 // ============================================
 //  ELEMENTOS DOM

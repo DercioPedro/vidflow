@@ -88,7 +88,7 @@ async function getLiveVisitors() {
     }
 }
 
-// Atualizar lista de visitantes
+// Atualizar lista de visitantes (GLOBAL)
 async function updateLiveVisitors() {
     try {
         const visitors = await getLiveVisitors();
@@ -98,30 +98,35 @@ async function updateLiveVisitors() {
             return (now - lastActivity) < 300000;
         });
         
-        const visitorCount = document.getElementById('visitorCount');
+        // Atualizar contador global
+        const visitorCount = document.getElementById('visitorCountGlobal');
         if (visitorCount) {
             visitorCount.textContent = activeVisitors.length;
         }
         
-        const visitorList = document.getElementById('visitorList');
+        // Atualizar lista global
+        const visitorList = document.getElementById('visitorListGlobal');
         if (visitorList) {
             if (activeVisitors.length === 0) {
-                visitorList.innerHTML = '<p style="color: #666; font-size: 12px;">Nenhum visitante online</p>';
+                visitorList.innerHTML = '<span style="color: #666; font-size: 12px;">Nenhum visitante online</span>';
                 return;
             }
             
-            visitorList.innerHTML = activeVisitors.map(v => {
+            // Mostrar apenas os 5 primeiros
+            const displayVisitors = activeVisitors.slice(0, 5);
+            
+            visitorList.innerHTML = displayVisitors.map(v => {
                 const isOnline = (new Date() - new Date(v.last_activity)) < 60000;
                 const status = isOnline ? '🟢' : '🟡';
-                const page = v.page === 'home' ? '🏠 Home' : '🎬 Video';
+                const page = v.page === 'home' ? '🏠' : '🎬';
                 const videoTitle = v.video_id ? videos.find(vid => vid.id === v.video_id)?.title || '' : '';
                 
                 return `
-                    <div class="visitor-item">
-                        <span class="page">${page}</span>
-                        ${videoTitle ? `<span class="video-title">${videoTitle.substring(0, 20)}...</span>` : ''}
-                        <span class="time">${status}</span>
-                    </div>
+                    <span class="visitor-item">
+                        <span>${page}</span>
+                        ${videoTitle ? `<span class="video-title">${videoTitle.substring(0, 15)}...</span>` : ''}
+                        <span class="status-online">${status}</span>
+                    </span>
                 `;
             }).join('');
         }

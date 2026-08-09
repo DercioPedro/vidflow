@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VidFlow</title>
-    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="style.css" />
     
     <meta name="robots" content="noindex, nofollow" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -14,24 +14,25 @@
     
     <script>
         // ============================================
-        //  CONFIGURAÇÃO DO SUPABASE
-        //  ⚠️ COLOQUE SEUS DADOS AQUI ⚠️
+        //  CONFIGURAÇÃO DO SUPABASE - CORRIGIDA
         // ============================================
-        const SUPABASE_URL = "https://gnlixbzycebqvzxpcemx.supabase.co/rest/v1/";
+        // ⚠️ A URL NÃO PODE TER /rest/v1/ NO FINAL
+        const SUPABASE_URL = "https://gnlixbzycebqvzxpcemx.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA";
         
         // Inicializar Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         console.log('🔷 Supabase conectado!');
+        console.log('✅ URL:', SUPABASE_URL);
     </script>
 </head>
 <body>
     <header>
         <div class="logo">🎬 VidFlow</div>
         <nav>
-            <button id="btnHome">🏠 Início</button>
-            <button id="btnAdmin">🔒 Admin</button>
+            <button id="btnHome"> Início</button>
+            <button id="btnAdmin"> Admin</button>
             <button id="btnLogout" style="display: none;">🚪 Sair</button>
         </nav>
     </header>
@@ -93,7 +94,7 @@
                 <input type="file" id="uploadFile" accept="video/*" required />
                 <small>Formatos: MP4, WebM (máx. 50MB no plano gratuito)</small>
             </div>
-            <button type="submit" class="btn-primary">🚀 Publicar vídeo</button>
+            <button type="submit" class="btn-primary">Publicar vídeo</button>
             <button type="button" class="btn-secondary" id="btnCancel">Cancelar</button>
         </form>
     </main>
@@ -110,8 +111,8 @@
             <p id="playerCategory">Categoria: <span></span></p>
             <div class="player-actions">
                 <button id="btnBack" class="btn-secondary">← Voltar</button>
-                <button id="btnDownload" class="btn-download" style="display: none;">⬇️ Baixar vídeo</button>
-                <button id="btnDelete" class="btn-delete" style="display: none;">🗑️ Excluir</button>
+                <button id="btnDownload" class="btn-download" style="display: none;"> Baixar vídeo</button>
+                <button id="btnDelete" class="btn-delete" style="display: none;"> Excluir</button>
             </div>
         </div>
     </main>

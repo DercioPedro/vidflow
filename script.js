@@ -9,7 +9,7 @@ let videos = [];
 console.log('📄 script.js carregado!');
 
 // ============================================
-//  REFERÊNCIAS DO SUPABASE
+//  SUPABASE - DECLARADO APENAS AQUI
 // ============================================
 const supabase = window.supabase.createClient(
     'https://gnlixbzycebqvzxpcemx.supabase.co',

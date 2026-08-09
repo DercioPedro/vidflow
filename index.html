@@ -3,104 +3,48 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vazados da BANDA 🇲🇿</title>
+    <title>Vazados da BANDA</title>
     <link rel="stylesheet" href="index.css" />
     
     <!-- ============================================
          PROTECAO CONTRA INSPECAO
          ============================================ -->
     <script>
-        // ============================================
-        //  BLOQUEAR INSPECAO DA PAGINA
-        // ============================================
-        
-        // 1. Bloquear teclas de atalho
+        // Bloquear teclas de atalho
         document.addEventListener('keydown', function(e) {
-            // F12 - Abrir DevTools
             if (e.key === 'F12') {
                 e.preventDefault();
                 return false;
             }
-            
-            // Ctrl+Shift+I - Inspecionar
             if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
                 e.preventDefault();
                 return false;
             }
-            
-            // Ctrl+Shift+J - Console
             if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
                 e.preventDefault();
                 return false;
             }
-            
-            // Ctrl+U - Ver codigo fonte
             if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
                 e.preventDefault();
                 return false;
             }
-            
-            // Ctrl+S - Salvar pagina
             if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
                 e.preventDefault();
                 return false;
             }
-            
-            // Ctrl+P - Imprimir
             if (e.ctrlKey && (e.key === 'P' || e.key === 'p')) {
                 e.preventDefault();
                 return false;
             }
-            
-            // Ctrl+C - Copiar (apenas em elementos nao permitidos)
-            if (e.ctrlKey && (e.key === 'C' || e.key === 'c')) {
-                // Permite copiar apenas de inputs e textareas
-                const tag = document.activeElement.tagName;
-                if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
-                    e.preventDefault();
-                    return false;
-                }
-            }
         });
         
-        // 2. Bloquear botao direito
+        // Bloquear botao direito
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             return false;
         });
         
-        // 3. Bloquear arrastar imagens/videos
-        document.addEventListener('dragstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        // 4. Detectar quando a pagina perde o foco
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                console.log('Atencao: pagina nao esta visivel');
-            }
-        });
-        
-        // 5. Prevenir que extensoes injetem codigo
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1) {
-                            if (node.tagName === 'IFRAME' || 
-                                (node.tagName === 'SCRIPT' && node.src && 
-                                 node.src.includes('chrome-extension'))) {
-                                node.remove();
-                            }
-                        }
-                    });
-                }
-            });
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-        
-        // 6. Bloquear PrintScreen
+        // Bloquear PrintScreen
         document.addEventListener('keyup', function(e) {
             if (e.key === 'PrintScreen') {
                 navigator.clipboard.writeText('');
@@ -110,11 +54,6 @@
         });
         
         console.log('Protecoes ativadas!');
-        console.log('  F12 bloqueado');
-        console.log('  Botao direito bloqueado');
-        console.log('  Ctrl+U bloqueado');
-        console.log('  Ctrl+S bloqueado');
-        console.log('  PrintScreen bloqueado');
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -124,7 +63,7 @@
         <div class="logo">Vazados da BANDA 🇲🇿</div>
         <nav>
             <button id="btnHome">Inicio</button>
-            <button id="btnAdmin"></button>
+            <button id="btnAdmin">Admin</button>
             <button id="btnLogout" style="display: none;">Sair</button>
         </nav>
     </header>
@@ -227,32 +166,5 @@
     </main>
 
     <script src="script.js"></script>
-    
-    <!-- ============================================
-         PROTECAO ADICIONAL (evita que abram DevTools)
-         ============================================ -->
-    <script>
-        // Bloquear abertura do DevTools via console
-        console.log = function() {};
-        console.warn = function() {};
-        console.error = function() {};
-        
-        // Tentar fechar DevTools se aberto
-        (function() {
-            var devtools = /./;
-            devtools.toString = function() {
-                this.opened = true;
-                window.location.href = 'about:blank';
-            };
-            console.log('%c', devtools);
-        })();
-        
-        // Bloquear acesso a variaveis globais
-        Object.defineProperty(window, 'console', {
-            value: console,
-            writable: false,
-            configurable: false
-        });
-    </script>
 </body>
 </html>

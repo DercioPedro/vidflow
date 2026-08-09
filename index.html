@@ -63,10 +63,23 @@
         <div class="logo">Vazados da BANDA 🇲🇿</div>
         <nav>
             <button id="btnHome">Inicio</button>
-            <button id="btnAdmin"></button>
+            <button id="btnAdmin">Admin</button>
             <button id="btnLogout" style="display: none;">Sair</button>
         </nav>
     </header>
+
+    <!-- ============================================
+         VISITANTES AO VIVO - SEMPRE VISIVEL
+         ============================================ -->
+    <div class="live-visitors-global" id="liveVisitorsGlobal">
+        <div class="live-indicator">
+            <span class="live-dot"></span>
+            <span id="visitorCountGlobal">0</span> visitantes online
+        </div>
+        <div id="visitorListGlobal" class="visitor-list">
+            <p style="color: #666; font-size: 12px;">Carregando...</p>
+        </div>
+    </div>
 
     <main id="pageHome">
         <div id="loadingIndicator" style="text-align: center; padding: 60px 0; color: #888;">
@@ -142,19 +155,6 @@
                 <button id="btnBack" class="btn-secondary">Voltar</button>
                 <button id="btnDownload" class="btn-download" style="display: none;">Baixar</button>
                 <button id="btnDelete" class="btn-delete" style="display: none;">Excluir</button>
-            </div>
-
-            <!-- ============================================
-                 VISITANTES AO VIVO
-                 ============================================ -->
-            <div class="live-visitors" id="liveVisitors">
-                <div class="live-indicator">
-                    <span class="live-dot"></span>
-                    <span id="visitorCount">0</span> visitantes online
-                </div>
-                <div id="visitorList" class="visitor-list">
-                    <p style="color: #666; font-size: 12px;">Carregando...</p>
-                </div>
             </div>
 
             <div class="comments-section">

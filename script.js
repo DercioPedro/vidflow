@@ -1,23 +1,33 @@
 // ============================================
-//  CONFIGURAÇÕES
+//  CONFIGURACOES
 // ============================================
 const ADMIN_PASSWORD = 'admin123';
 let isAdmin = false;
 let currentVideoId = null;
 let videos = [];
+let comments = [];
 
-console.log('📄 script.js carregado!');
+console.log('script.js carregado!');
 
 // ============================================
-//  SUPABASE - USANDO NOME DIFERENTE
-//  ⚠️ Mudei de 'supabase' para 'sb' para evitar conflito
+//  SUPABASE
 // ============================================
 const sb = window.supabase.createClient(
     'https://gnlixbzycebqvzxpcemx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA'
 );
 
-console.log('🔷 Supabase conectado!');
+console.log('Supabase conectado!');
+
+// ============================================
+//  FUNCAO PARA LIMPAR NOME DO ARQUIVO
+// ============================================
+
+function cleanFileName(fileName) {
+    const semAcentos = fileName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const limpo = semAcentos.replace(/[^a-zA-Z0-9_.-]/g, '_');
+    return limpo.replace(/[^\w\-_.]/g, '').substring(0, 50);
+}
 
 // ============================================
 //  ELEMENTOS DOM
@@ -50,14 +60,19 @@ const playerTitle = document.getElementById('playerTitle');
 const playerDesc = document.getElementById('playerDesc');
 const playerCategory = document.getElementById('playerCategory');
 
-console.log('✅ Elementos DOM carregados');
+const commentInput = document.getElementById('commentInput');
+const commentAnonymous = document.getElementById('commentAnonymous');
+const btnSendComment = document.getElementById('btnSendComment');
+const commentsList = document.getElementById('commentsList');
+
+console.log('Elementos DOM carregados');
 
 // ============================================
-//  FUNÇÕES
+//  FUNCOES GERAIS
 // ============================================
 
 function generateSecureId() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
 }
 
 function randomDate() {
@@ -67,13 +82,18 @@ function randomDate() {
     return date.toLocaleDateString('pt-BR');
 }
 
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
 // ============================================
-//  CARREGAR VÍDEOS
+//  VIDEOS - CRUD
 // ============================================
 
 async function loadVideos() {
     try {
-        console.log('📥 Carregando vídeos...');
+        console.log('Carregando videos...');
         loadingIndicator.style.display = 'block';
         
         const { data, error } = await sb
@@ -81,17 +101,12 @@ async function loadVideos() {
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (error) {
-            console.error('❌ Erro Supabase:', error);
-            throw error;
-        }
-        
-        console.log('📊 Dados recebidos:', data);
+        if (error) throw error;
         
         videos = data.map(video => ({
             id: video.id,
             title: video.title,
-            description: video.description || 'Sem descrição',
+            description: video.description || 'Sem descricao',
             category: video.category || 'Geral',
             url: video.url,
             date: video.date || randomDate()
@@ -99,26 +114,22 @@ async function loadVideos() {
         
         renderVideos();
         loadingIndicator.style.display = 'none';
-        console.log(`✅ ${videos.length} vídeos carregados`);
+        console.log(videos.length + ' videos carregados');
     } catch (error) {
-        console.error('❌ Erro:', error);
+        console.error('Erro:', error);
         loadingIndicator.innerHTML = `
-            <h3>❌ Erro ao carregar vídeos</h3>
+            <h3>Erro ao carregar videos</h3>
             <p style="color: #888;">${error.message}</p>
             <button onclick="loadVideos()" style="margin-top: 20px; padding: 10px 30px; background: #ff0033; color: #fff; border: none; border-radius: 30px; cursor: pointer;">Tentar novamente</button>
         `;
     }
 }
 
-// ============================================
-//  RENDERIZAR VÍDEOS
-// ============================================
-
 function renderVideos() {
     if (videos.length === 0) {
         videoGrid.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 60px 0;">
-                <h3>📭 Nenhum vídeo disponível</h3>
+                <h3>Nenhum video disponivel</h3>
                 <p>Clique em "Admin" para publicar!</p>
             </div>
         `;
@@ -148,47 +159,17 @@ function renderVideos() {
     });
 }
 
-// ============================================
-//  ABRIR PLAYER
-// ============================================
-
-function openPlayer(id) {
-    const video = videos.find(v => v.id === id);
-    if (!video) {
-        alert('❌ Vídeo não encontrado!');
-        return;
-    }
-
-    currentVideoId = id;
-    playerVideo.src = video.url;
-    playerVideo.load();
-    playerVideo.play();
-    playerTitle.textContent = video.title;
-    playerDesc.textContent = video.description || 'Sem descrição';
-    playerCategory.innerHTML = `<span>${video.category}</span>`;
-
-    btnDownload.style.display = 'block';
-    btnDelete.style.display = isAdmin ? 'block' : 'none';
-
-    pageHome.style.display = 'none';
-    pageLogin.style.display = 'none';
-    pageUpload.style.display = 'none';
-    pagePlayer.style.display = 'block';
-}
-
-// ============================================
-//  SALVAR VÍDEO
-// ============================================
-
 async function saveVideoToSupabase(title, description, category, file) {
     try {
         uploadProgress.style.display = 'block';
         progressBar.style.width = '0%';
         progressPercent.textContent = '0%';
         
-        const fileName = `${generateSecureId()}_${file.name}`;
+        const nomeLimpo = cleanFileName(file.name);
+        const extensao = file.name.split('.').pop();
+        const fileName = generateSecureId() + '_' + nomeLimpo + '.' + extensao;
         
-        const { data: uploadData, error: uploadError } = await sb.storage
+        const { error: uploadError } = await sb.storage
             .from('videos')
             .upload(fileName, file);
         
@@ -202,7 +183,7 @@ async function saveVideoToSupabase(title, description, category, file) {
         
         const videoData = {
             title: title,
-            description: description || 'Sem descrição',
+            description: description || 'Sem descricao',
             category: category || 'Geral',
             url: downloadURL,
             date: randomDate()
@@ -228,22 +209,18 @@ async function saveVideoToSupabase(title, description, category, file) {
         
         return newVideo.id;
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro ao salvar:', error);
         uploadProgress.style.display = 'none';
         throw error;
     }
 }
 
-// ============================================
-//  EXCLUIR VÍDEO
-// ============================================
-
 async function deleteVideoFromSupabase(videoId) {
-    if (!confirm('🗑️ Tem certeza que deseja excluir este vídeo?')) return;
+    if (!confirm('Tem certeza que deseja excluir este video?')) return;
     
     const video = videos.find(v => v.id === videoId);
     if (!video) {
-        alert('❌ Vídeo não encontrado!');
+        alert('Video nao encontrado!');
         return;
     }
     
@@ -255,6 +232,7 @@ async function deleteVideoFromSupabase(videoId) {
     }
     
     await sb.from('videos').delete().eq('id', videoId);
+    await sb.from('comments').delete().eq('video_id', videoId);
     
     videos = videos.filter(v => v.id !== videoId);
     renderVideos();
@@ -264,7 +242,139 @@ async function deleteVideoFromSupabase(videoId) {
     btnDelete.style.display = 'none';
     pageHome.style.display = 'block';
     
-    alert('✅ Vídeo excluído!');
+    alert('Video excluido!');
+}
+
+// ============================================
+//  COMENTARIOS - CRUD
+// ============================================
+
+async function loadComments(videoId) {
+    try {
+        const { data, error } = await sb
+            .from('comments')
+            .select('*')
+            .eq('video_id', videoId)
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        
+        comments = data;
+        renderComments();
+    } catch (error) {
+        console.error('Erro ao carregar comentarios:', error);
+        commentsList.innerHTML = '<p style="color: #888;">Erro ao carregar comentarios</p>';
+    }
+}
+
+function renderComments() {
+    if (comments.length === 0) {
+        commentsList.innerHTML = `
+            <p style="color: #666; text-align: center; padding: 20px;">
+                Nenhum comentario ainda. Seja o primeiro!
+            </p>
+        `;
+        return;
+    }
+
+    commentsList.innerHTML = comments.map(comment => {
+        const isAnonymous = comment.author === 'Anonimo' || comment.is_anonymous;
+        const autor = isAnonymous ? 'Anonimo' : comment.author || 'Usuario';
+        const data = formatDate(comment.created_at);
+        
+        return `
+            <div class="comment-item">
+                <div class="comment-header">
+                    <strong class="comment-author">${autor}</strong>
+                    <span class="comment-date">${data}</span>
+                    ${isAdmin ? `<button class="btn-delete-comment" data-id="${comment.id}">X</button>` : ''}
+                </div>
+                <p class="comment-text">${comment.content}</p>
+            </div>
+        `;
+    }).join('');
+
+    document.querySelectorAll('.btn-delete-comment').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentId = this.dataset.id;
+            deleteComment(commentId);
+        });
+    });
+}
+
+async function sendComment(videoId, content, isAnonymous) {
+    if (!content.trim()) {
+        alert('Digite um comentario!');
+        return;
+    }
+
+    try {
+        const commentData = {
+            video_id: videoId,
+            content: content.trim(),
+            author: isAnonymous ? 'Anonimo' : 'Usuario',
+            is_anonymous: isAnonymous
+        };
+
+        const { data, error } = await sb
+            .from('comments')
+            .insert([commentData])
+            .select();
+
+        if (error) throw error;
+
+        await loadComments(videoId);
+        commentInput.value = '';
+        commentAnonymous.checked = false;
+        
+        console.log('Comentario enviado!');
+    } catch (error) {
+        console.error('Erro ao enviar comentario:', error);
+        alert('Erro ao enviar comentario: ' + error.message);
+    }
+}
+
+async function deleteComment(commentId) {
+    if (!confirm('Excluir este comentario?')) return;
+    
+    try {
+        await sb.from('comments').delete().eq('id', commentId);
+        await loadComments(currentVideoId);
+        console.log('Comentario excluido!');
+    } catch (error) {
+        console.error('Erro ao excluir comentario:', error);
+        alert('Erro ao excluir comentario');
+    }
+}
+
+// ============================================
+//  ABRIR PLAYER
+// ============================================
+
+function openPlayer(id) {
+    const video = videos.find(v => v.id === id);
+    if (!video) {
+        alert('Video nao encontrado!');
+        return;
+    }
+
+    currentVideoId = id;
+    playerVideo.src = video.url;
+    playerVideo.load();
+    playerVideo.play();
+    playerTitle.textContent = video.title;
+    playerDesc.textContent = video.description || 'Sem descricao';
+    playerCategory.innerHTML = '<span>' + video.category + '</span>';
+
+    btnDownload.style.display = 'block';
+    btnDelete.style.display = isAdmin ? 'block' : 'none';
+
+    pageHome.style.display = 'none';
+    pageLogin.style.display = 'none';
+    pageUpload.style.display = 'none';
+    pagePlayer.style.display = 'block';
+
+    loadComments(id);
 }
 
 // ============================================
@@ -273,7 +383,7 @@ async function deleteVideoFromSupabase(videoId) {
 
 function loginAdmin() {
     isAdmin = true;
-    btnAdmin.textContent = '📝 Publicar';
+    btnAdmin.textContent = 'Publicar';
     btnAdmin.classList.add('admin-logged');
     btnLogout.style.display = 'inline-block';
     pageLogin.style.display = 'none';
@@ -282,7 +392,7 @@ function loginAdmin() {
 
 function logoutAdmin() {
     isAdmin = false;
-    btnAdmin.textContent = '🔒 Admin';
+    btnAdmin.textContent = 'Admin';
     btnAdmin.classList.remove('admin-logged');
     btnLogout.style.display = 'none';
     pageUpload.style.display = 'none';
@@ -349,18 +459,18 @@ btnBack.addEventListener('click', () => {
 
 btnDownload.addEventListener('click', function() {
     if (!currentVideoId) {
-        alert('❌ Nenhum vídeo selecionado.');
+        alert('Nenhum video selecionado.');
         return;
     }
     const video = videos.find(v => v.id === currentVideoId);
     if (!video) {
-        alert('❌ Vídeo não encontrado.');
+        alert('Video nao encontrado.');
         return;
     }
-    if (confirm(`⬇️ Baixar "${video.title}"?`)) {
+    if (confirm('Baixar "' + video.title + '"?')) {
         const link = document.createElement('a');
         link.href = video.url;
-        link.download = `${video.title.replace(/[^a-zA-Z0-9]/g, '_')}.mp4`;
+        link.download = video.title.replace(/[^a-zA-Z0-9]/g, '_') + '.mp4';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -370,6 +480,27 @@ btnDownload.addEventListener('click', function() {
 btnDelete.addEventListener('click', function() {
     if (!currentVideoId) return;
     deleteVideoFromSupabase(currentVideoId);
+});
+
+// ============================================
+//  EVENTOS DE COMENTARIOS
+// ============================================
+
+btnSendComment.addEventListener('click', function() {
+    if (!currentVideoId) {
+        alert('Nenhum video selecionado.');
+        return;
+    }
+    const content = commentInput.value;
+    const isAnonymous = commentAnonymous.checked;
+    sendComment(currentVideoId, content, isAnonymous);
+});
+
+commentInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.ctrlKey) {
+        e.preventDefault();
+        btnSendComment.click();
+    }
 });
 
 // ============================================
@@ -384,7 +515,7 @@ loginForm.addEventListener('submit', function(e) {
         document.getElementById('uploadForm').reset();
         uploadFile.value = '';
     } else {
-        alert('❌ Senha incorreta!');
+        alert('Senha incorreta!');
         adminPassword.value = '';
     }
 });
@@ -396,7 +527,7 @@ loginForm.addEventListener('submit', function(e) {
 uploadForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     if (!isAdmin) {
-        alert('⛔ Sem permissão!');
+        alert('Sem permissao!');
         return;
     }
 
@@ -406,7 +537,7 @@ uploadForm.addEventListener('submit', async function(e) {
     const file = uploadFile.files[0];
 
     if (!title) {
-        alert('Digite um título.');
+        alert('Digite um titulo.');
         return;
     }
     if (!file) {
@@ -414,11 +545,11 @@ uploadForm.addEventListener('submit', async function(e) {
         return;
     }
     if (file.size > 50 * 1024 * 1024) {
-        alert('Arquivo muito grande! Máximo 50MB.');
+        alert('Arquivo muito grande! Maximo 50MB.');
         return;
     }
     if (!file.type.startsWith('video/')) {
-        alert('Formato inválido! Use MP4 ou WebM.');
+        alert('Formato invalido! Use MP4 ou WebM.');
         return;
     }
 
@@ -429,9 +560,9 @@ uploadForm.addEventListener('submit', async function(e) {
         uploadForm.reset();
         uploadFile.value = '';
         await loadVideos();
-        alert('✅ Vídeo publicado!');
+        alert('Video publicado!');
     } catch (error) {
-        alert('❌ Erro: ' + error.message);
+        alert('Erro: ' + error.message);
     }
 });
 
@@ -450,7 +581,7 @@ document.addEventListener('keydown', function(e) {
 //  INICIALIZAR
 // ============================================
 
-console.log('🚀 Inicializando VidFlow...');
+console.log('Inicializando VidFlow...');
 loadVideos();
-console.log('🎬 VidFlow pronto!');
-console.log('🔐 Pressione Ctrl+Shift+A para acessar o admin');
+console.log('VidFlow pronto!');
+console.log('Pressione Ctrl+Shift+A para acessar o admin');

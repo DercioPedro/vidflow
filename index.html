@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VidFlow</title>
+    <link rel="stylesheet" href="index.css" />
+    
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    
+    <!-- 🔷 Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // ============================================
+        //  CONFIGURAÇÃO DO SUPABASE
+        //  ⚠️ COLOQUE SEUS DADOS AQUI ⚠️
+        // ============================================
+        const SUPABASE_URL = "https://gnlixbzycebqvzxpcemx.supabase.co/rest/v1/";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA";
+        
+        // Inicializar Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        console.log('🔷 Supabase conectado!');
+    </script>
+</head>
+<body>
+    <header>
+        <div class="logo">🎬 VidFlow</div>
+        <nav>
+            <button id="btnHome">🏠 Início</button>
+            <button id="btnAdmin">🔒 Admin</button>
+            <button id="btnLogout" style="display: none;">🚪 Sair</button>
+        </nav>
+    </header>
+
+    <main id="pageHome">
+        <div id="loadingIndicator" style="text-align: center; padding: 60px 0;">
+            <h3>⏳ Carregando vídeos...</h3>
+        </div>
+        <section class="video-grid" id="videoGrid"></section>
+    </main>
+
+    <main id="pageLogin" style="display: none;">
+        <div class="login-container">
+            <div class="login-box">
+                <h2>🔐 Área Restrita</h2>
+                <p>Digite a senha de administrador</p>
+                <form id="loginForm" autocomplete="off">
+                    <input type="password" id="adminPassword" placeholder="Digite a senha..." autocomplete="off" />
+                    <button type="submit" class="btn-primary">Entrar</button>
+                    <button type="button" class="btn-secondary" id="btnCancelLogin">Voltar</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <main id="pageUpload" style="display: none;">
+        <h2>📝 Publicar novo vídeo</h2>
+        <div id="uploadProgress" style="display: none; background: #1a1a1a; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span>⏳ Enviando...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden;">
+                <div id="progressBar" style="width: 0%; height: 100%; background: #ff0033; transition: width 0.3s;"></div>
+            </div>
+        </div>
+        <form id="uploadForm" autocomplete="off">
+            <div class="form-group">
+                <label>Título do vídeo *</label>
+                <input type="text" id="videoTitle" required placeholder="Digite o título..." autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label>Descrição</label>
+                <textarea id="videoDesc" rows="4" placeholder="Descreva o vídeo..." autocomplete="off"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <select id="videoCategory">
+                    <option value="Geral">Geral</option>
+                    <option value="Educação">Educação</option>
+                    <option value="Entretenimento">Entretenimento</option>
+                    <option value="Música">Música</option>
+                    <option value="Games">Games</option>
+                    <option value="Tecnologia">Tecnologia</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Arquivo de vídeo *</label>
+                <input type="file" id="uploadFile" accept="video/*" required />
+                <small>Formatos: MP4, WebM (máx. 50MB no plano gratuito)</small>
+            </div>
+            <button type="submit" class="btn-primary">🚀 Publicar vídeo</button>
+            <button type="button" class="btn-secondary" id="btnCancel">Cancelar</button>
+        </form>
+    </main>
+
+    <main id="pagePlayer" style="display: none;">
+        <div class="player-container">
+            <div class="video-wrapper">
+                <video id="playerVideo" controls autoplay>
+                    Seu navegador não suporta vídeos.
+                </video>
+            </div>
+            <h2 id="playerTitle">Título do Vídeo</h2>
+            <p id="playerDesc">Descrição</p>
+            <p id="playerCategory">Categoria: <span></span></p>
+            <div class="player-actions">
+                <button id="btnBack" class="btn-secondary">← Voltar</button>
+                <button id="btnDownload" class="btn-download" style="display: none;">⬇️ Baixar vídeo</button>
+                <button id="btnDelete" class="btn-delete" style="display: none;">🗑️ Excluir</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

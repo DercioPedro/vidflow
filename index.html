@@ -3,87 +3,95 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vazados da BANDA</title>
+    <title>Vazados da BANDA — Catalogo Exclusivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="index.css" />
-    
-    <!-- ============================================
-         PROTECAO CONTRA INSPECAO
-         ============================================ -->
     <script>
-        // Bloquear teclas de atalho
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12') {
+            if (e.key === 'F12') { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
                 e.preventDefault();
                 return false;
             }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && (e.key === 'P' || e.key === 'p')) {
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's' || e.key === 'P' || e.key === 'p')) {
                 e.preventDefault();
                 return false;
             }
         });
-        
-        // Bloquear botao direito
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             return false;
         });
-        
-        // Bloquear PrintScreen
-        document.addEventListener('keyup', function(e) {
-            if (e.key === 'PrintScreen') {
-                navigator.clipboard.writeText('');
-                alert('Captura de tela bloqueada!');
-                return false;
-            }
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            return false;
         });
-        
-        console.log('Protecoes ativadas!');
     </script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+
     <header>
-        <div class="logo">Vazados da BANDA 🇲🇿</div>
+        <div class="logo" id="logoHome" title="Vazados da BANDA">
+            <span class="logo-mark">VB</span>
+            <span class="logo-text">
+                <strong>Vazados da BANDA</strong>
+                <small>Catalogo exclusivo</small>
+            </span>
+        </div>
         <nav>
-            <button id="btnHome">Inicio</button>
-            <button id="btnAdmin"></button>
-            <button id="btnLogout" style="display: none;">Sair</button>
+            <button type="button" id="btnHome" class="nav-link is-active">Catalogo</button>
+            <a id="headerTelegram" class="nav-telegram" href="#" target="_blank" rel="noopener noreferrer" style="display: none;">Telegram</a>
+            <button type="button" id="btnAdminPanel" class="nav-link" style="display: none;">Painel</button>
+            <button type="button" id="btnLogout" style="display: none;">Sair</button>
+            <div class="live-chip" id="liveChip">
+                <span class="live-dot"></span>
+                <span id="visitorCountGlobal">0</span>
+                <span class="live-label">online</span>
+            </div>
         </nav>
     </header>
 
-    <!-- ============================================
-         VISITANTES AO VIVO - SEMPRE VISIVEL
-         ============================================ -->
-    <div class="live-visitors-global" id="liveVisitorsGlobal">
-        <div class="live-indicator">
-            <span class="live-dot"></span>
-            <span id="visitorCountGlobal">0</span> visitantes online
-        </div>
-        <div id="visitorListGlobal" class="visitor-list">
-            <p style="color: #666; font-size: 12px;">Carregando...</p>
-        </div>
-    </div>
-
     <main id="pageHome">
-        <div id="loadingIndicator" style="text-align: center; padding: 60px 0; color: #888;">
-            <h3>Carregando videos...</h3>
+        <section class="hero">
+            <p class="hero-kicker">Colecao privada · Entrega via Telegram</p>
+            <h1>Conteudo exclusivo,<br />selecionado para voce.</h1>
+            <p class="hero-lead">Navegue o catalogo, veja o preview e adquira o video original diretamente com o proprietario.</p>
+            <div class="hero-actions">
+                <a class="btn-gold" href="#catalogo">Ver catalogo</a>
+                <a id="heroTelegram" class="btn-ghost" href="#" target="_blank" rel="noopener noreferrer">Falar no Telegram</a>
+            </div>
+            <div class="hero-stats">
+                <div>
+                    <strong id="statVideos">0</strong>
+                    <span>titulos</span>
+                </div>
+                <div>
+                    <strong id="statCats">0</strong>
+                    <span>categorias</span>
+                </div>
+                <div>
+                    <strong id="statOnline">0</strong>
+                    <span>online agora</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="toolbar" id="catalogo">
+            <div class="search-wrap">
+                <input type="search" id="searchInput" placeholder="Buscar titulo ou categoria..." autocomplete="off" />
+            </div>
+            <div class="filters" id="categoryFilters"></div>
+        </section>
+
+        <div id="loadingIndicator" class="loading-state">
+            <div class="spinner"></div>
+            <h3>A carregar catalogo...</h3>
         </div>
         <section class="video-grid" id="videoGrid"></section>
     </main>
@@ -91,88 +99,231 @@
     <main id="pageLogin" style="display: none;">
         <div class="login-container">
             <div class="login-box">
-                <h2>Area Restrita</h2>
-                <p>Digite a senha de administrador</p>
+                <p class="hero-kicker">Acesso restrito</p>
+                <h2>Painel de gestao</h2>
+                <p>Apenas o proprietario. Digite a senha para gerir o catalogo.</p>
                 <form id="loginForm">
-                    <input type="password" id="adminPassword" placeholder="Digite a senha..." />
-                    <button type="submit" class="btn-primary">Entrar</button>
-                    <button type="button" class="btn-secondary" id="btnCancelLogin">Voltar</button>
+                    <input type="password" id="adminPassword" placeholder="Senha de administrador" autocomplete="current-password" />
+                    <button type="submit" class="btn-primary">Entrar no painel</button>
+                    <button type="button" class="btn-secondary" id="btnCancelLogin">Voltar ao catalogo</button>
                 </form>
             </div>
         </div>
     </main>
 
-    <main id="pageUpload" style="display: none;">
-        <h2>Publicar novo video</h2>
-        <div id="uploadProgress" style="display: none;">
-            <div style="display: flex; justify-content: space-between;">
-                <span>Enviando...</span>
-                <span id="progressPercent">0%</span>
+    <main id="pageAdmin" style="display: none;">
+        <section class="admin-shell">
+            <div class="admin-head">
+                <div>
+                    <p class="hero-kicker">Gestao completa</p>
+                    <h2>Painel do proprietario</h2>
+                </div>
+                <div class="admin-tabs">
+                    <button type="button" class="tab-btn is-active" data-tab="dash">Resumo</button>
+                    <button type="button" class="tab-btn" data-tab="videos">Videos</button>
+                    <button type="button" class="tab-btn" data-tab="upload">Publicar</button>
+                    <button type="button" class="tab-btn" data-tab="settings">Definicoes</button>
+                </div>
             </div>
-            <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 10px;">
-                <div id="progressBar" style="width: 0%; height: 100%; background: #ff0033;"></div>
+
+            <div class="admin-tab" id="tabDash">
+                <div class="dash-grid">
+                    <article class="dash-card">
+                        <span>Videos no catalogo</span>
+                        <strong id="dashVideoCount">0</strong>
+                    </article>
+                    <article class="dash-card">
+                        <span>Visitantes online</span>
+                        <strong id="dashOnlineCount">0</strong>
+                    </article>
+                    <article class="dash-card">
+                        <span>Telegram</span>
+                        <strong id="dashTelegram">—</strong>
+                    </article>
+                </div>
+                <p class="admin-hint">Tudo e gerido aqui: precos, publicacoes, exclusoes e o contacto do Telegram. O publico nao ve este painel.</p>
             </div>
-        </div>
-        <form id="uploadForm">
-            <div class="form-group">
-                <label>Titulo do video *</label>
-                <input type="text" id="videoTitle" required placeholder="Digite o titulo..." />
+
+            <div class="admin-tab" id="tabVideos" style="display: none;">
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Titulo</th>
+                                <th>Categoria</th>
+                                <th>Preco</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminVideoList"></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Descricao</label>
-                <textarea id="videoDesc" rows="4" placeholder="Descreva o video..."></textarea>
+
+            <div class="admin-tab" id="tabUpload" style="display: none;">
+                <div id="uploadProgress" style="display: none;">
+                    <div class="progress-meta">
+                        <span>A enviar...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div id="progressBar"></div>
+                    </div>
+                </div>
+                <form id="uploadForm">
+                    <div class="form-group">
+                        <label>Titulo do video</label>
+                        <input type="text" id="videoTitle" required placeholder="Titulo comercial" />
+                    </div>
+                    <div class="form-group">
+                        <label>Descricao</label>
+                        <textarea id="videoDesc" rows="4" placeholder="Descricao visivel no catalogo"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Categoria</label>
+                            <select id="videoCategory">
+                                <option value="Vazados Hot">Vazados HOT</option>
+                                <option value="Vazados de celebridades">Vazados de Celebridades</option>
+                                <option value="Vazados">Vazados</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Preco (MT)</label>
+                            <input type="number" id="videoPrice" min="0" step="1" required placeholder="Ex: 1500" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Arquivo de video</label>
+                        <input type="file" id="uploadFile" accept="video/*" required />
+                        <small>Formatos: MP4, WebM (max. 50MB). O publico ve apenas um preview de 12 segundos.</small>
+                    </div>
+                    <button type="submit" class="btn-primary">Publicar no catalogo</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label>Categoria</label>
-                <select id="videoCategory">
-                    <option value="Vazados Hot">Vazados HOT</option>
-                    <option value="Vazados de celebridades">vazados de Celebridades</option>
-                    <option value="Vazados">Vazados</option>
-                </select>
+
+            <div class="admin-tab" id="tabSettings" style="display: none;">
+                <form id="settingsForm">
+                    <div class="form-group">
+                        <label>Utilizador ou link do Telegram</label>
+                        <input type="text" id="telegramInput" placeholder="@seuuser ou https://t.me/seuuser" />
+                        <small>Quem tiver interesse e redirecionado para este contacto, com o titulo e o preco do video.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Duracao do preview publico (segundos)</label>
+                        <input type="number" id="previewSeconds" min="5" max="30" value="12" />
+                    </div>
+                    <button type="submit" class="btn-primary">Guardar definicoes</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label>Arquivo de video *</label>
-                <input type="file" id="uploadFile" accept="video/*" required />
-                <small>Formatos: MP4, WebM (max. 50MB)</small>
-            </div>
-            <button type="submit" class="btn-primary">Publicar video</button>
-            <button type="button" class="btn-secondary" id="btnCancel">Cancelar</button>
-        </form>
+        </section>
     </main>
 
     <main id="pagePlayer" style="display: none;">
-        <div class="player-container">
-            <video id="playerVideo" controls autoplay></video>
-            <h2 id="playerTitle">Titulo do Video</h2>
-            <p id="playerDesc">Descricao</p>
-            <p id="playerCategory">Categoria: <span></span></p>
-            
-            <div class="player-actions">
-                <button id="btnBack" class="btn-secondary">Voltar</button>
-                <button id="btnDownload" class="btn-download" style="display: none;">Baixar</button>
-                <button id="btnDelete" class="btn-delete" style="display: none;">Excluir</button>
-            </div>
-
-            <div class="comments-section">
-                <h3>Comentarios</h3>
-                
-                <div class="comment-form">
-                    <textarea id="commentInput" rows="3" placeholder="Digite seu comentario..."></textarea>
-                    <div class="comment-options">
-                        <label>
-                            <input type="checkbox" id="commentAnonymous" />
-                            Comentar anonimamente
-                        </label>
-                        <button id="btnSendComment" class="btn-primary-small">Enviar</button>
+        <div class="player-layout">
+            <div class="player-main">
+                <div class="video-stage" id="videoStage">
+                    <video
+                        id="playerVideo"
+                        playsinline
+                        controls
+                        controlslist="nodownload noplaybackrate noremoteplayback"
+                        disablepictureinpicture
+                        oncontextmenu="return false;"
+                    ></video>
+                    <div class="preview-tag" id="previewTag">Preview de 12s</div>
+                    <div class="lock-overlay" id="lockOverlay">
+                        <div>
+                            <p class="hero-kicker">Preview encerrado</p>
+                            <h3>Adquira o video completo</h3>
+                            <p>O ficheiro original e entregue pelo proprietario no Telegram.</p>
+                            <button type="button" class="btn-gold" id="btnLockTelegram">Tenho interesse</button>
+                        </div>
                     </div>
                 </div>
+                <h2 id="playerTitle">Titulo do Video</h2>
+                <p id="playerDesc">Descricao</p>
+                <p id="playerCategory">Categoria: <span></span></p>
 
-                <div id="commentsList" class="comments-list">
-                    <p style="color: #666; text-align: center;">Carregando comentarios...</p>
+                <div class="player-actions">
+                    <button type="button" id="btnBack" class="btn-secondary">Voltar ao catalogo</button>
+                    <button type="button" id="btnDelete" class="btn-delete" style="display: none;">Excluir video</button>
+                </div>
+
+                <div class="comments-section">
+                    <h3>Comentarios</h3>
+                    <div class="comment-form">
+                        <textarea id="commentInput" rows="3" placeholder="Escreva um comentario..."></textarea>
+                        <div class="comment-options">
+                            <label>
+                                <input type="checkbox" id="commentAnonymous" />
+                                Comentar anonimamente
+                            </label>
+                            <button type="button" id="btnSendComment" class="btn-primary-small">Enviar</button>
+                        </div>
+                    </div>
+                    <div id="commentsList" class="comments-list">
+                        <p class="muted-center">A carregar comentarios...</p>
+                    </div>
                 </div>
             </div>
+
+            <aside class="buy-panel">
+                <p class="hero-kicker">Adquirir agora</p>
+                <div class="buy-price" id="playerPrice">0 MT</div>
+                <p class="buy-copy">Pagamento e entrega do ficheiro original via Telegram. Sem download nesta pagina.</p>
+                <button type="button" class="btn-telegram-cta" id="btnInterest">Tenho interesse</button>
+                <ul class="buy-points">
+                    <li>Preco definido pelo proprietario</li>
+                    <li>Sem download publico</li>
+                    <li>Negociacao direta no Telegram</li>
+                </ul>
+            </aside>
         </div>
     </main>
+
+    <div class="modal" id="editModal" style="display: none;">
+        <div class="modal-card">
+            <h3>Editar video</h3>
+            <form id="editForm">
+                <input type="hidden" id="editVideoId" />
+                <div class="form-group">
+                    <label>Titulo</label>
+                    <input type="text" id="editTitle" required />
+                </div>
+                <div class="form-group">
+                    <label>Descricao</label>
+                    <textarea id="editDesc" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="editCategory">
+                            <option value="Vazados Hot">Vazados HOT</option>
+                            <option value="Vazados de celebridades">Vazados de Celebridades</option>
+                            <option value="Vazados">Vazados</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Preco (MT)</label>
+                        <input type="number" id="editPrice" min="0" step="1" required />
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Guardar</button>
+                    <button type="button" class="btn-secondary" id="btnCancelEdit">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div>
+            <strong>Vazados da BANDA</strong>
+            <p>Catalogo privado. Videos a venda, entrega via Telegram.</p>
+        </div>
+        <p class="footer-note">Conteudo protegido. Download desativado.</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>

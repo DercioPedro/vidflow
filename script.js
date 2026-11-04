@@ -1,26 +1,23 @@
-// ============================================
-//  CONFIGURACOES
-// ============================================
+const SITE_SETTINGS_KEY = 'vb_site_settings';
+const DEFAULT_SETTINGS = {
+    telegram: '',
+    previewSeconds: 12
+};
+
 let isAdmin = false;
 let currentVideoId = null;
 let videos = [];
 let comments = [];
+let activeCategory = 'Todos';
+let searchTerm = '';
+let previewTimer = null;
+let siteSettings = loadSettings();
 
-console.log('script.js carregado!');
-
-// ============================================
-//  SUPABASE
-// ============================================
 const sb = window.supabase.createClient(
     'https://gnlixbzycebqvzxpcemx.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGl4Ynp5Y2VicXZ6eHBjZW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNzE4NTAsImV4cCI6MjEwMTg0Nzg1MH0.LndsCYcFyJdWPD6_25zjtLZSBkNdwRVk6fv6xl1UWJA'
 );
 
-// ============================================
-//  SISTEMA DE VISITANTES AO VIVO
-// ============================================
-
-// Gerar ID de sessao unico
 function generateSessionId() {
     let sessionId = localStorage.getItem('visitor_session_id');
     if (!sessionId) {
@@ -34,172 +31,48 @@ const SESSION_ID = generateSessionId();
 let lastVisitorUpdate = 0;
 let visitorUpdateInterval = null;
 
-// Registrar visitante
-async function registerVisitor(page, videoId = null) {
+function loadSettings() {
     try {
-        const now = Date.now();
-        if (now - lastVisitorUpdate < 10000) return;
-        lastVisitorUpdate = now;
-        
-        const visitorData = {
-            session_id: SESSION_ID,
-            page: page,
-            video_id: videoId,
-            last_activity: new Date().toISOString(),
-            user_agent: navigator.userAgent.substring(0, 200)
-        };
-        
-        const { data: existing, error: findError } = await sb
-            .from('live_visitors')
-            .select('id')
-            .eq('session_id', SESSION_ID)
-            .limit(1);
-        
-        if (findError) throw findError;
-        
-        if (existing && existing.length > 0) {
-            await sb.from('live_visitors')
-                .update({
-                    page: page,
-                    video_id: videoId,
-                    last_activity: new Date().toISOString()
-                })
-                .eq('session_id', SESSION_ID);
-        } else {
-            await sb.from('live_visitors').insert([visitorData]);
-        }
+        const raw = localStorage.getItem(SITE_SETTINGS_KEY);
+        if (!raw) return { ...DEFAULT_SETTINGS };
+        return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
     } catch (error) {
-        // Silencioso
+        return { ...DEFAULT_SETTINGS };
     }
 }
 
-// Buscar visitantes ao vivo
-async function getLiveVisitors() {
-    try {
-        const { data, error } = await sb
-            .from('live_visitors')
-            .select('*')
-            .order('last_activity', { ascending: false });
-        
-        if (error) throw error;
-        return data || [];
-    } catch (error) {
-        return [];
-    }
+function saveSettingsLocal(next) {
+    siteSettings = { ...siteSettings, ...next };
+    localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(siteSettings));
+    applyTelegramLinks();
 }
 
-// Atualizar lista de visitantes (GLOBAL)
-async function updateLiveVisitors() {
-    try {
-        const visitors = await getLiveVisitors();
-        const activeVisitors = visitors.filter(v => {
-            const lastActivity = new Date(v.last_activity);
-            const now = new Date();
-            return (now - lastActivity) < 300000;
-        });
-        
-        // Atualizar contador global
-        const visitorCount = document.getElementById('visitorCountGlobal');
-        if (visitorCount) {
-            visitorCount.textContent = activeVisitors.length;
-        }
-        
-        // Atualizar lista global
-        const visitorList = document.getElementById('visitorListGlobal');
-        if (visitorList) {
-            if (activeVisitors.length === 0) {
-                visitorList.innerHTML = '<span style="color: #666; font-size: 12px;">Nenhum visitante online</span>';
-                return;
-            }
-            
-            // Mostrar apenas os 5 primeiros
-            const displayVisitors = activeVisitors.slice(0, 5);
-            
-            visitorList.innerHTML = displayVisitors.map(v => {
-                const isOnline = (new Date() - new Date(v.last_activity)) < 60000;
-                const status = isOnline ? '🟢' : '🟡';
-                const page = v.page === 'home' ? '🏠' : '🎬';
-                const videoTitle = v.video_id ? videos.find(vid => vid.id === v.video_id)?.title || '' : '';
-                
-                return `
-                    <span class="visitor-item">
-                        <span>${page}</span>
-                        ${videoTitle ? `<span class="video-title">${videoTitle.substring(0, 15)}...</span>` : ''}
-                        <span class="status-online">${status}</span>
-                    </span>
-                `;
-            }).join('');
-        }
-    } catch (error) {
-        // Silencioso
-    }
+function telegramHref(video) {
+    const contact = (siteSettings.telegram || '').trim();
+    const base = normalizeTelegram(contact);
+    if (!base) return '';
+    if (!video) return base;
+    const text = encodeURIComponent(
+        'Ola, tenho interesse no video "' + video.title + '" por ' + formatPrice(video.price) + '.'
+    );
+    const sep = base.includes('?') ? '&' : '?';
+    return base + sep + 'text=' + text;
 }
 
-// Iniciar atualizacao de visitantes
-function startVisitorUpdates() {
-    if (visitorUpdateInterval) {
-        clearInterval(visitorUpdateInterval);
-    }
-    visitorUpdateInterval = setInterval(updateLiveVisitors, 10000);
-    updateLiveVisitors();
+function normalizeTelegram(value) {
+    if (!value) return '';
+    const trimmed = value.trim();
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    const user = trimmed.replace(/^@/, '');
+    if (!user) return '';
+    return 'https://t.me/' + user;
 }
 
-function stopVisitorUpdates() {
-    if (visitorUpdateInterval) {
-        clearInterval(visitorUpdateInterval);
-        visitorUpdateInterval = null;
-    }
+function formatPrice(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount < 0) return 'A consultar';
+    return amount.toLocaleString('pt-MZ') + ' MT';
 }
-
-// ============================================
-//  FUNCAO PARA LIMPAR NOME DO ARQUIVO
-// ============================================
-
-function cleanFileName(fileName) {
-    const semAcentos = fileName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const limpo = semAcentos.replace(/[^a-zA-Z0-9_.-]/g, '_');
-    return limpo.replace(/[^\w\-_.]/g, '').substring(0, 50);
-}
-
-// ============================================
-//  ELEMENTOS DOM
-// ============================================
-const pageHome = document.getElementById('pageHome');
-const pageLogin = document.getElementById('pageLogin');
-const pageUpload = document.getElementById('pageUpload');
-const pagePlayer = document.getElementById('pagePlayer');
-
-const videoGrid = document.getElementById('videoGrid');
-const loadingIndicator = document.getElementById('loadingIndicator');
-const uploadForm = document.getElementById('uploadForm');
-const uploadFile = document.getElementById('uploadFile');
-const uploadProgress = document.getElementById('uploadProgress');
-const progressBar = document.getElementById('progressBar');
-const progressPercent = document.getElementById('progressPercent');
-const btnHome = document.getElementById('btnHome');
-const btnAdmin = document.getElementById('btnAdmin');
-const btnLogout = document.getElementById('btnLogout');
-const btnCancel = document.getElementById('btnCancel');
-const btnBack = document.getElementById('btnBack');
-const btnCancelLogin = document.getElementById('btnCancelLogin');
-const btnDownload = document.getElementById('btnDownload');
-const btnDelete = document.getElementById('btnDelete');
-const loginForm = document.getElementById('loginForm');
-const adminPassword = document.getElementById('adminPassword');
-
-const playerVideo = document.getElementById('playerVideo');
-const playerTitle = document.getElementById('playerTitle');
-const playerDesc = document.getElementById('playerDesc');
-const playerCategory = document.getElementById('playerCategory');
-
-const commentInput = document.getElementById('commentInput');
-const commentAnonymous = document.getElementById('commentAnonymous');
-const btnSendComment = document.getElementById('btnSendComment');
-const commentsList = document.getElementById('commentsList');
-
-// ============================================
-//  FUNCOES GERAIS
-// ============================================
 
 function generateSecureId() {
     return Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
@@ -217,241 +90,414 @@ function formatDate(dateString) {
     return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
-// ============================================
-//  VERIFICAR SENHA NO BANCO DE DADOS
-// ============================================
+function cleanFileName(fileName) {
+    const semAcentos = fileName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const limpo = semAcentos.replace(/[^a-zA-Z0-9_.-]/g, '_');
+    return limpo.replace(/[^\w\-_.]/g, '').substring(0, 50);
+}
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+const pageHome = document.getElementById('pageHome');
+const pageLogin = document.getElementById('pageLogin');
+const pageAdmin = document.getElementById('pageAdmin');
+const pagePlayer = document.getElementById('pagePlayer');
+const videoGrid = document.getElementById('videoGrid');
+const loadingIndicator = document.getElementById('loadingIndicator');
+const uploadForm = document.getElementById('uploadForm');
+const uploadFile = document.getElementById('uploadFile');
+const uploadProgress = document.getElementById('uploadProgress');
+const progressBar = document.getElementById('progressBar');
+const progressPercent = document.getElementById('progressPercent');
+const btnHome = document.getElementById('btnHome');
+const btnAdminPanel = document.getElementById('btnAdminPanel');
+const btnLogout = document.getElementById('btnLogout');
+const btnBack = document.getElementById('btnBack');
+const btnCancelLogin = document.getElementById('btnCancelLogin');
+const btnDelete = document.getElementById('btnDelete');
+const loginForm = document.getElementById('loginForm');
+const adminPassword = document.getElementById('adminPassword');
+const playerVideo = document.getElementById('playerVideo');
+const playerTitle = document.getElementById('playerTitle');
+const playerDesc = document.getElementById('playerDesc');
+const playerCategory = document.getElementById('playerCategory');
+const playerPrice = document.getElementById('playerPrice');
+const commentInput = document.getElementById('commentInput');
+const commentAnonymous = document.getElementById('commentAnonymous');
+const btnSendComment = document.getElementById('btnSendComment');
+const commentsList = document.getElementById('commentsList');
+const lockOverlay = document.getElementById('lockOverlay');
+const previewTag = document.getElementById('previewTag');
+const searchInput = document.getElementById('searchInput');
+const categoryFilters = document.getElementById('categoryFilters');
+const editModal = document.getElementById('editModal');
+const editForm = document.getElementById('editForm');
+
+function showPage(name) {
+    pageHome.style.display = name === 'home' ? 'block' : 'none';
+    pageLogin.style.display = name === 'login' ? 'block' : 'none';
+    pageAdmin.style.display = name === 'admin' ? 'block' : 'none';
+    pagePlayer.style.display = name === 'player' ? 'block' : 'none';
+    btnHome.classList.toggle('is-active', name === 'home');
+    if (name !== 'player') {
+        playerVideo.pause();
+        clearPreviewLock();
+    }
+}
+
+async function registerVisitor(page, videoId = null) {
+    try {
+        const now = Date.now();
+        if (now - lastVisitorUpdate < 10000) return;
+        lastVisitorUpdate = now;
+        const visitorData = {
+            session_id: SESSION_ID,
+            page: page,
+            video_id: videoId,
+            last_activity: new Date().toISOString(),
+            user_agent: navigator.userAgent.substring(0, 200)
+        };
+        const { data: existing, error: findError } = await sb
+            .from('live_visitors')
+            .select('id')
+            .eq('session_id', SESSION_ID)
+            .limit(1);
+        if (findError) throw findError;
+        if (existing && existing.length > 0) {
+            await sb.from('live_visitors')
+                .update({
+                    page: page,
+                    video_id: videoId,
+                    last_activity: new Date().toISOString()
+                })
+                .eq('session_id', SESSION_ID);
+        } else {
+            await sb.from('live_visitors').insert([visitorData]);
+        }
+    } catch (error) {
+        return;
+    }
+}
+
+async function getLiveVisitors() {
+    try {
+        const { data, error } = await sb.from('live_visitors').select('*').order('last_activity', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        return [];
+    }
+}
+
+async function updateLiveVisitors() {
+    try {
+        const visitors = await getLiveVisitors();
+        const activeVisitors = visitors.filter(v => (new Date() - new Date(v.last_activity)) < 300000);
+        const countEls = [
+            document.getElementById('visitorCountGlobal'),
+            document.getElementById('statOnline'),
+            document.getElementById('dashOnlineCount')
+        ];
+        countEls.forEach(el => {
+            if (el) el.textContent = activeVisitors.length;
+        });
+    } catch (error) {
+        return;
+    }
+}
+
+function startVisitorUpdates() {
+    if (visitorUpdateInterval) clearInterval(visitorUpdateInterval);
+    visitorUpdateInterval = setInterval(updateLiveVisitors, 10000);
+    updateLiveVisitors();
+}
+
+async function loadRemoteSettings() {
+    try {
+        const { data, error } = await sb.from('admin_config').select('*').limit(1);
+        if (error || !data || !data.length) return;
+        const row = data[0];
+        const next = {};
+        if (row.telegram) next.telegram = row.telegram;
+        if (row.preview_seconds) next.previewSeconds = Number(row.preview_seconds) || 12;
+        saveSettingsLocal(next);
+        fillSettingsForm();
+    } catch (error) {
+        fillSettingsForm();
+    }
+}
+
+function fillSettingsForm() {
+    const telegramInput = document.getElementById('telegramInput');
+    const previewSeconds = document.getElementById('previewSeconds');
+    if (telegramInput) telegramInput.value = siteSettings.telegram || '';
+    if (previewSeconds) previewSeconds.value = siteSettings.previewSeconds || 12;
+    applyTelegramLinks();
+}
+
+function applyTelegramLinks() {
+    const href = telegramHref(null);
+    ['headerTelegram', 'heroTelegram'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (href) {
+            el.href = href;
+            el.style.display = id === 'headerTelegram' ? 'inline-flex' : 'inline-flex';
+        } else {
+            el.style.display = 'none';
+        }
+    });
+    const dashTelegram = document.getElementById('dashTelegram');
+    if (dashTelegram) dashTelegram.textContent = siteSettings.telegram || 'Nao definido';
+}
 
 async function verifyAdminPassword(password) {
     try {
-        const { data, error } = await sb
-            .from('admin_config')
-            .select('password')
-            .limit(1);
-        
+        const { data, error } = await sb.from('admin_config').select('password').limit(1);
         if (error) throw error;
-        
         if (data && data.length > 0) {
             return data[0].password === password;
-        } else {
-            const defaultPassword = 'admin123';
-            const { error: insertError } = await sb
-                .from('admin_config')
-                .insert([{ password: defaultPassword }]);
-            
-            if (insertError) throw insertError;
-            return password === defaultPassword;
         }
+        const defaultPassword = 'admin123';
+        const { error: insertError } = await sb.from('admin_config').insert([{ password: defaultPassword }]);
+        if (insertError) throw insertError;
+        return password === defaultPassword;
     } catch (error) {
-        console.error('Erro ao verificar senha:', error);
         return false;
     }
 }
 
-// ============================================
-//  VIDEOS - CRUD
-// ============================================
-
 async function loadVideos() {
     try {
         loadingIndicator.style.display = 'block';
-        
-        const { data, error } = await sb
-            .from('videos')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
+        const { data, error } = await sb.from('videos').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-        
-        videos = data.map(video => ({
+        videos = (data || []).map(video => ({
             id: video.id,
             title: video.title,
             description: video.description || 'Sem descricao',
             category: video.category || 'Geral',
             url: video.url,
-            date: video.date || randomDate()
+            date: video.date || randomDate(),
+            price: video.price != null ? Number(video.price) : 0
         }));
-        
+        renderFilters();
         renderVideos();
+        renderAdminVideos();
+        updateStats();
         loadingIndicator.style.display = 'none';
     } catch (error) {
-        loadingIndicator.innerHTML = `
-            <h3>Erro ao carregar videos</h3>
-            <p style="color: #888;">${error.message}</p>
-            <button onclick="loadVideos()" style="margin-top: 20px; padding: 10px 30px; background: #ff0033; color: #fff; border: none; border-radius: 30px; cursor: pointer;">Tentar novamente</button>
-        `;
+        loadingIndicator.innerHTML = '<h3>Erro ao carregar videos</h3><p>' + escapeHtml(error.message) + '</p>';
     }
 }
 
-function renderVideos() {
-    if (videos.length === 0) {
-        videoGrid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 60px 0;">
-                <h3>Nenhum video disponivel</h3>
-            </div>
-        `;
-        return;
-    }
+function updateStats() {
+    const cats = new Set(videos.map(v => v.category).filter(Boolean));
+    const statVideos = document.getElementById('statVideos');
+    const statCats = document.getElementById('statCats');
+    const dashVideoCount = document.getElementById('dashVideoCount');
+    if (statVideos) statVideos.textContent = videos.length;
+    if (statCats) statCats.textContent = cats.size;
+    if (dashVideoCount) dashVideoCount.textContent = videos.length;
+}
 
-    const shuffledVideos = [...videos].sort(() => Math.random() - 0.5);
+function filteredVideos() {
+    return videos.filter(video => {
+        const matchCat = activeCategory === 'Todos' || video.category === activeCategory;
+        const q = searchTerm.trim().toLowerCase();
+        const matchSearch = !q || video.title.toLowerCase().includes(q) || (video.category || '').toLowerCase().includes(q);
+        return matchCat && matchSearch;
+    });
+}
 
-    videoGrid.innerHTML = shuffledVideos.map((video) => `
-        <div class="video-card" data-id="${video.id}">
-            <video src="${video.url}" muted preload="metadata"></video>
-            <div class="video-info">
-                <h3>${video.title}</h3>
-                <div class="meta">
-                    <span>${video.date}</span>
-                    <span class="category">${video.category}</span>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    document.querySelectorAll('.video-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const id = this.dataset.id;
-            openPlayer(id);
+function renderFilters() {
+    const cats = ['Todos', ...Array.from(new Set(videos.map(v => v.category).filter(Boolean)))];
+    categoryFilters.innerHTML = cats.map(cat =>
+        '<button type="button" class="filter-chip' + (cat === activeCategory ? ' is-active' : '') + '" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '</button>'
+    ).join('');
+    categoryFilters.querySelectorAll('.filter-chip').forEach(btn => {
+        btn.addEventListener('click', function() {
+            activeCategory = this.dataset.cat;
+            renderFilters();
+            renderVideos();
         });
     });
 }
 
-async function saveVideoToSupabase(title, description, category, file) {
-    try {
-        uploadProgress.style.display = 'block';
-        progressBar.style.width = '0%';
-        progressPercent.textContent = '0%';
-        
-        const nomeLimpo = cleanFileName(file.name);
-        const extensao = file.name.split('.').pop();
-        const fileName = generateSecureId() + '_' + nomeLimpo + '.' + extensao;
-        
-        const { error: uploadError } = await sb.storage
-            .from('videos')
-            .upload(fileName, file);
-        
-        if (uploadError) throw uploadError;
-        
-        progressBar.style.width = '70%';
-        progressPercent.textContent = '70%';
-        
-        const { data: urlData } = sb.storage.from('videos').getPublicUrl(fileName);
-        const downloadURL = urlData.publicUrl;
-        
-        const videoData = {
-            title: title,
-            description: description || 'Sem descricao',
-            category: category || 'Geral',
-            url: downloadURL,
-            date: randomDate()
-        };
-        
-        const { data: insertData, error: insertError } = await sb
-            .from('videos')
-            .insert([videoData])
-            .select();
-        
-        if (insertError) throw insertError;
-        
-        const newVideo = insertData[0];
-        videos.unshift({ id: newVideo.id, ...videoData });
-        renderVideos();
-        
-        progressBar.style.width = '100%';
-        progressPercent.textContent = '100%';
-        
-        setTimeout(() => {
-            uploadProgress.style.display = 'none';
-        }, 500);
-        
-        return newVideo.id;
-    } catch (error) {
-        uploadProgress.style.display = 'none';
-        throw error;
+function renderVideos() {
+    const list = filteredVideos();
+    if (list.length === 0) {
+        videoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><h3>Nenhum video neste filtro</h3></div>';
+        return;
     }
+    videoGrid.innerHTML = list.map((video, index) => `
+        <article class="video-card" data-id="${video.id}" style="animation-delay:${index * 40}ms">
+            <div class="thumb-wrap">
+                <video src="${escapeHtml(video.url)}" muted preload="metadata" playsinline></video>
+                <div class="thumb-overlay"></div>
+                <span class="preview-badge">Preview</span>
+                <span class="price-badge">${escapeHtml(formatPrice(video.price))}</span>
+            </div>
+            <div class="video-info">
+                <h3>${escapeHtml(video.title)}</h3>
+                <div class="meta">
+                    <span>${escapeHtml(video.date)}</span>
+                    <span class="category">${escapeHtml(video.category)}</span>
+                </div>
+            </div>
+        </article>
+    `).join('');
+    document.querySelectorAll('.video-card').forEach(card => {
+        card.addEventListener('click', function() {
+            openPlayer(this.dataset.id);
+        });
+    });
+}
+
+function renderAdminVideos() {
+    const body = document.getElementById('adminVideoList');
+    if (!body) return;
+    if (!videos.length) {
+        body.innerHTML = '<tr><td colspan="4">Nenhum video publicado.</td></tr>';
+        return;
+    }
+    body.innerHTML = videos.map(video => `
+        <tr>
+            <td>${escapeHtml(video.title)}</td>
+            <td>${escapeHtml(video.category)}</td>
+            <td>${escapeHtml(formatPrice(video.price))}</td>
+            <td>
+                <div class="table-actions">
+                    <button type="button" data-edit="${video.id}">Editar</button>
+                    <button type="button" data-del="${video.id}">Excluir</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    body.querySelectorAll('[data-edit]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            openEditModal(this.dataset.edit);
+        });
+    });
+    body.querySelectorAll('[data-del]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            deleteVideoFromSupabase(this.dataset.del);
+        });
+    });
+}
+
+async function saveVideoToSupabase(title, description, category, price, file) {
+    uploadProgress.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressPercent.textContent = '0%';
+    const nomeLimpo = cleanFileName(file.name);
+    const extensao = file.name.split('.').pop();
+    const fileName = generateSecureId() + '_' + nomeLimpo + '.' + extensao;
+    const { error: uploadError } = await sb.storage.from('videos').upload(fileName, file);
+    if (uploadError) throw uploadError;
+    progressBar.style.width = '70%';
+    progressPercent.textContent = '70%';
+    const { data: urlData } = sb.storage.from('videos').getPublicUrl(fileName);
+    const videoData = {
+        title: title,
+        description: description || 'Sem descricao',
+        category: category || 'Geral',
+        url: urlData.publicUrl,
+        date: randomDate(),
+        price: Number(price) || 0
+    };
+    const { data: insertData, error: insertError } = await sb.from('videos').insert([videoData]).select();
+    if (insertError) {
+        const fallback = { ...videoData };
+        delete fallback.price;
+        const retry = await sb.from('videos').insert([fallback]).select();
+        if (retry.error) throw retry.error;
+        videos.unshift({ id: retry.data[0].id, ...videoData });
+    } else {
+        videos.unshift({ id: insertData[0].id, ...videoData });
+    }
+    progressBar.style.width = '100%';
+    progressPercent.textContent = '100%';
+    setTimeout(() => { uploadProgress.style.display = 'none'; }, 500);
+}
+
+async function updateVideoMeta(id, fields) {
+    const payload = {
+        title: fields.title,
+        description: fields.description,
+        category: fields.category,
+        price: Number(fields.price) || 0
+    };
+    let { error } = await sb.from('videos').update(payload).eq('id', id);
+    if (error) {
+        const fallback = { title: payload.title, description: payload.description, category: payload.category };
+        const retry = await sb.from('videos').update(fallback).eq('id', id);
+        if (retry.error) throw retry.error;
+    }
+    const video = videos.find(v => String(v.id) === String(id));
+    if (video) Object.assign(video, payload);
+    renderVideos();
+    renderAdminVideos();
+    updateStats();
 }
 
 async function deleteVideoFromSupabase(videoId) {
     if (!confirm('Tem certeza que deseja excluir este video?')) return;
-    
-    const video = videos.find(v => v.id === videoId);
-    if (!video) {
-        alert('Video nao encontrado!');
-        return;
-    }
-    
-    const urlParts = video.url.split('/');
-    const fileName = urlParts[urlParts.length - 1];
-    
-    if (fileName) {
-        await sb.storage.from('videos').remove([fileName]);
-    }
-    
+    const video = videos.find(v => String(v.id) === String(videoId));
+    if (!video) return;
+    const fileName = video.url.split('/').pop();
+    if (fileName) await sb.storage.from('videos').remove([fileName]);
     await sb.from('videos').delete().eq('id', videoId);
     await sb.from('comments').delete().eq('video_id', videoId);
-    
-    videos = videos.filter(v => v.id !== videoId);
+    videos = videos.filter(v => String(v.id) !== String(videoId));
     renderVideos();
-    
-    pagePlayer.style.display = 'none';
-    btnDownload.style.display = 'none';
-    btnDelete.style.display = 'none';
-    pageHome.style.display = 'block';
-    
-    alert('Video excluido!');
+    renderAdminVideos();
+    updateStats();
+    if (String(currentVideoId) === String(videoId)) {
+        showPage('home');
+        currentVideoId = null;
+    }
 }
-
-// ============================================
-//  COMENTARIOS - CRUD
-// ============================================
 
 async function loadComments(videoId) {
     try {
-        const { data, error } = await sb
-            .from('comments')
-            .select('*')
-            .eq('video_id', videoId)
-            .order('created_at', { ascending: true });
-        
+        const { data, error } = await sb.from('comments').select('*').eq('video_id', videoId).order('created_at', { ascending: true });
         if (error) throw error;
-        
-        comments = data;
+        comments = data || [];
         renderComments();
     } catch (error) {
-        commentsList.innerHTML = '<p style="color: #888;">Erro ao carregar comentarios</p>';
+        commentsList.innerHTML = '<p class="muted-center">Erro ao carregar comentarios</p>';
     }
 }
 
 function renderComments() {
-    if (comments.length === 0) {
-        commentsList.innerHTML = `
-            <p style="color: #666; text-align: center; padding: 20px;">
-                Nenhum comentario ainda. Seja o primeiro!
-            </p>
-        `;
+    if (!comments.length) {
+        commentsList.innerHTML = '<p class="muted-center">Nenhum comentario ainda.</p>';
         return;
     }
-
     commentsList.innerHTML = comments.map(comment => {
         const isAnonymous = comment.author === 'Anonimo' || comment.is_anonymous;
         const autor = isAnonymous ? 'Anonimo' : comment.author || 'Usuario';
-        const data = formatDate(comment.created_at);
-        
         return `
             <div class="comment-item">
                 <div class="comment-header">
-                    <strong class="comment-author">${autor}</strong>
-                    <span class="comment-date">${data}</span>
-                    ${isAdmin ? `<button class="btn-delete-comment" data-id="${comment.id}">X</button>` : ''}
+                    <strong class="comment-author">${escapeHtml(autor)}</strong>
+                    <span class="comment-date">${escapeHtml(formatDate(comment.created_at))}</span>
+                    ${isAdmin ? '<button class="btn-delete-comment" data-id="' + comment.id + '">X</button>' : ''}
                 </div>
-                <p class="comment-text">${comment.content}</p>
+                <p class="comment-text">${escapeHtml(comment.content)}</p>
             </div>
         `;
     }).join('');
-
     document.querySelectorAll('.btn-delete-comment').forEach(btn => {
         btn.addEventListener('click', function() {
-            const commentId = this.dataset.id;
-            deleteComment(commentId);
+            deleteComment(this.dataset.id);
         });
     });
 }
@@ -461,173 +507,155 @@ async function sendComment(videoId, content, isAnonymous) {
         alert('Digite um comentario!');
         return;
     }
-
-    try {
-        const commentData = {
-            video_id: videoId,
-            content: content.trim(),
-            author: isAnonymous ? 'Anonimo' : 'Usuario',
-            is_anonymous: isAnonymous
-        };
-
-        const { data, error } = await sb
-            .from('comments')
-            .insert([commentData])
-            .select();
-
-        if (error) throw error;
-
-        await loadComments(videoId);
-        commentInput.value = '';
-        commentAnonymous.checked = false;
-    } catch (error) {
+    const commentData = {
+        video_id: videoId,
+        content: content.trim(),
+        author: isAnonymous ? 'Anonimo' : 'Usuario',
+        is_anonymous: isAnonymous
+    };
+    const { error } = await sb.from('comments').insert([commentData]).select();
+    if (error) {
         alert('Erro ao enviar comentario: ' + error.message);
+        return;
     }
+    await loadComments(videoId);
+    commentInput.value = '';
+    commentAnonymous.checked = false;
 }
 
 async function deleteComment(commentId) {
     if (!confirm('Excluir este comentario?')) return;
-    
-    try {
-        await sb.from('comments').delete().eq('id', commentId);
-        await loadComments(currentVideoId);
-    } catch (error) {
-        alert('Erro ao excluir comentario');
-    }
+    await sb.from('comments').delete().eq('id', commentId);
+    await loadComments(currentVideoId);
 }
 
-// ============================================
-//  ABRIR PLAYER
-// ============================================
+function clearPreviewLock() {
+    if (previewTimer) {
+        clearTimeout(previewTimer);
+        previewTimer = null;
+    }
+    lockOverlay.classList.remove('is-visible');
+    playerVideo.controls = true;
+}
+
+function armPreviewLock() {
+    clearPreviewLock();
+    const seconds = Number(siteSettings.previewSeconds) || 12;
+    previewTag.textContent = 'Preview de ' + seconds + 's';
+    const lockNow = function() {
+        playerVideo.pause();
+        playerVideo.controls = false;
+        lockOverlay.classList.add('is-visible');
+    };
+    playerVideo.addEventListener('timeupdate', function onTime() {
+        if (playerVideo.currentTime >= seconds) {
+            playerVideo.removeEventListener('timeupdate', onTime);
+            lockNow();
+        }
+    });
+    previewTimer = setTimeout(lockNow, seconds * 1000 + 400);
+}
+
+function goToTelegram(video) {
+    const href = telegramHref(video);
+    if (!href) {
+        alert('O proprietario ainda nao definiu o Telegram no painel.');
+        return;
+    }
+    window.open(href, '_blank', 'noopener,noreferrer');
+}
 
 function openPlayer(id) {
-    const video = videos.find(v => v.id === id);
+    const video = videos.find(v => String(v.id) === String(id));
     if (!video) {
         alert('Video nao encontrado!');
         return;
     }
-
     currentVideoId = id;
+    playerVideo.removeAttribute('src');
     playerVideo.src = video.url;
+    playerVideo.controls = true;
+    playerVideo.setAttribute('controlsList', 'nodownload noplaybackrate noremoteplayback');
     playerVideo.load();
-    playerVideo.play();
     playerTitle.textContent = video.title;
     playerDesc.textContent = video.description || 'Sem descricao';
-    playerCategory.innerHTML = '<span>' + video.category + '</span>';
-
-    btnDownload.style.display = 'block';
-    btnDelete.style.display = isAdmin ? 'block' : 'none';
-
-    pageHome.style.display = 'none';
-    pageLogin.style.display = 'none';
-    pageUpload.style.display = 'none';
-    pagePlayer.style.display = 'block';
-
-    // Registrar visitante no player
+    playerCategory.innerHTML = 'Categoria: <span>' + escapeHtml(video.category) + '</span>';
+    playerPrice.textContent = formatPrice(video.price);
+    btnDelete.style.display = isAdmin ? 'inline-flex' : 'none';
+    showPage('player');
     registerVisitor('player', id);
     loadComments(id);
+    playerVideo.play().catch(() => {});
+    armPreviewLock();
 }
-
-// ============================================
-//  ADMIN
-// ============================================
 
 function loginAdmin() {
     isAdmin = true;
-    btnAdmin.textContent = 'Publicar';
-    btnAdmin.classList.add('admin-logged');
-    btnLogout.style.display = 'inline-block';
-    pageLogin.style.display = 'none';
-    pageUpload.style.display = 'block';
+    btnAdminPanel.style.display = 'inline-flex';
+    btnLogout.style.display = 'inline-flex';
+    showPage('admin');
+    switchTab('dash');
+    renderAdminVideos();
+    fillSettingsForm();
 }
 
 function logoutAdmin() {
     isAdmin = false;
-    btnAdmin.textContent = 'Admin';
-    btnAdmin.classList.remove('admin-logged');
+    btnAdminPanel.style.display = 'none';
     btnLogout.style.display = 'none';
-    pageUpload.style.display = 'none';
-    pageLogin.style.display = 'none';
-    pageHome.style.display = 'block';
+    showPage('home');
     renderVideos();
 }
 
-// ============================================
-//  EVENTOS
-// ============================================
+function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.tab === name);
+    });
+    document.getElementById('tabDash').style.display = name === 'dash' ? 'block' : 'none';
+    document.getElementById('tabVideos').style.display = name === 'videos' ? 'block' : 'none';
+    document.getElementById('tabUpload').style.display = name === 'upload' ? 'block' : 'none';
+    document.getElementById('tabSettings').style.display = name === 'settings' ? 'block' : 'none';
+}
+
+function openEditModal(id) {
+    const video = videos.find(v => String(v.id) === String(id));
+    if (!video) return;
+    document.getElementById('editVideoId').value = video.id;
+    document.getElementById('editTitle').value = video.title;
+    document.getElementById('editDesc').value = video.description || '';
+    document.getElementById('editCategory').value = video.category;
+    document.getElementById('editPrice').value = video.price || 0;
+    editModal.style.display = 'grid';
+}
+
+function closeEditModal() {
+    editModal.style.display = 'none';
+}
+
+document.getElementById('logoHome').addEventListener('click', () => {
+    showPage('home');
+    registerVisitor('home', null);
+});
 
 btnHome.addEventListener('click', () => {
-    pageHome.style.display = 'block';
-    pageLogin.style.display = 'none';
-    pageUpload.style.display = 'none';
-    pagePlayer.style.display = 'none';
-    btnDownload.style.display = 'none';
-    btnDelete.style.display = 'none';
-    playerVideo.pause();
+    showPage('home');
     registerVisitor('home', null);
     loadVideos();
 });
 
-btnAdmin.addEventListener('click', () => {
-    if (isAdmin) {
-        pageHome.style.display = 'none';
-        pageLogin.style.display = 'none';
-        pageUpload.style.display = 'block';
-        pagePlayer.style.display = 'none';
-    } else {
-        pageHome.style.display = 'none';
-        pageLogin.style.display = 'block';
-        pageUpload.style.display = 'none';
-        pagePlayer.style.display = 'none';
-        adminPassword.value = '';
-    }
+btnAdminPanel.addEventListener('click', () => {
+    if (isAdmin) showPage('admin');
 });
 
 btnLogout.addEventListener('click', () => {
-    if (confirm('Deseja sair?')) logoutAdmin();
+    if (confirm('Deseja sair do painel?')) logoutAdmin();
 });
 
-btnCancelLogin.addEventListener('click', () => {
-    pageHome.style.display = 'block';
-    pageLogin.style.display = 'none';
-});
-
-btnCancel.addEventListener('click', () => {
-    if (isAdmin) {
-        pageHome.style.display = 'block';
-        pageUpload.style.display = 'none';
-        loadVideos();
-    }
-});
+btnCancelLogin.addEventListener('click', () => showPage('home'));
 
 btnBack.addEventListener('click', () => {
-    pageHome.style.display = 'block';
-    pagePlayer.style.display = 'none';
-    btnDownload.style.display = 'none';
-    btnDelete.style.display = 'none';
-    playerVideo.pause();
+    showPage('home');
     registerVisitor('home', null);
-    loadVideos();
-});
-
-btnDownload.addEventListener('click', function() {
-    if (!currentVideoId) {
-        alert('Nenhum video selecionado.');
-        return;
-    }
-    const video = videos.find(v => v.id === currentVideoId);
-    if (!video) {
-        alert('Video nao encontrado.');
-        return;
-    }
-    if (confirm('Baixar "' + video.title + '"?')) {
-        const link = document.createElement('a');
-        link.href = video.url;
-        link.download = video.title.replace(/[^a-zA-Z0-9]/g, '_') + '.mp4';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
 });
 
 btnDelete.addEventListener('click', function() {
@@ -635,18 +663,9 @@ btnDelete.addEventListener('click', function() {
     deleteVideoFromSupabase(currentVideoId);
 });
 
-// ============================================
-//  EVENTOS DE COMENTARIOS
-// ============================================
-
 btnSendComment.addEventListener('click', function() {
-    if (!currentVideoId) {
-        alert('Nenhum video selecionado.');
-        return;
-    }
-    const content = commentInput.value;
-    const isAnonymous = commentAnonymous.checked;
-    sendComment(currentVideoId, content, isAnonymous);
+    if (!currentVideoId) return;
+    sendComment(currentVideoId, commentInput.value, commentAnonymous.checked);
 });
 
 commentInput.addEventListener('keydown', function(e) {
@@ -656,19 +675,12 @@ commentInput.addEventListener('keydown', function(e) {
     }
 });
 
-// ============================================
-//  LOGIN (COM VERIFICACAO NO BANCO)
-// ============================================
-
 loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
-    const password = adminPassword.value;
-    
-    const isValid = await verifyAdminPassword(password);
-    
+    const isValid = await verifyAdminPassword(adminPassword.value);
     if (isValid) {
         loginAdmin();
-        document.getElementById('uploadForm').reset();
+        uploadForm.reset();
         uploadFile.value = '';
     } else {
         alert('Senha incorreta!');
@@ -676,88 +688,126 @@ loginForm.addEventListener('submit', async function(e) {
     }
 });
 
-// ============================================
-//  UPLOAD
-// ============================================
-
 uploadForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     if (!isAdmin) {
         alert('Sem permissao!');
         return;
     }
-
     const title = document.getElementById('videoTitle').value.trim();
     const description = document.getElementById('videoDesc').value.trim();
     const category = document.getElementById('videoCategory').value;
+    const price = document.getElementById('videoPrice').value;
     const file = uploadFile.files[0];
-
-    if (!title) {
-        alert('Digite um titulo.');
-        return;
-    }
-    if (!file) {
-        alert('Selecione um arquivo.');
-        return;
-    }
-    if (file.size > 50 * 1024 * 1024) {
-        alert('Arquivo muito grande! Maximo 50MB.');
-        return;
-    }
-    if (!file.type.startsWith('video/')) {
-        alert('Formato invalido! Use MP4 ou WebM.');
-        return;
-    }
-
+    if (!title) { alert('Digite um titulo.'); return; }
+    if (!file) { alert('Selecione um arquivo.'); return; }
+    if (file.size > 50 * 1024 * 1024) { alert('Arquivo muito grande! Maximo 50MB.'); return; }
+    if (!file.type.startsWith('video/')) { alert('Formato invalido! Use MP4 ou WebM.'); return; }
     try {
-        await saveVideoToSupabase(title, description, category, file);
-        pageHome.style.display = 'block';
-        pageUpload.style.display = 'none';
+        await saveVideoToSupabase(title, description, category, price, file);
         uploadForm.reset();
         uploadFile.value = '';
         await loadVideos();
+        switchTab('videos');
         alert('Video publicado!');
     } catch (error) {
         alert('Erro: ' + error.message);
     }
 });
 
-// ============================================
-//  ATALHO ADMIN
-// ============================================
+document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const telegram = document.getElementById('telegramInput').value.trim();
+    const previewSeconds = Number(document.getElementById('previewSeconds').value) || 12;
+    saveSettingsLocal({ telegram, previewSeconds });
+    try {
+        const { data } = await sb.from('admin_config').select('id').limit(1);
+        if (data && data.length) {
+            await sb.from('admin_config').update({ telegram, preview_seconds: previewSeconds }).eq('id', data[0].id);
+        }
+    } catch (error) {
+        // settings stay local if extra columns do not exist yet
+    }
+    alert('Definicoes guardadas.');
+});
+
+editForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('editVideoId').value;
+    try {
+        await updateVideoMeta(id, {
+            title: document.getElementById('editTitle').value.trim(),
+            description: document.getElementById('editDesc').value.trim(),
+            category: document.getElementById('editCategory').value,
+            price: document.getElementById('editPrice').value
+        });
+        closeEditModal();
+    } catch (error) {
+        alert('Erro ao guardar: ' + error.message);
+    }
+});
+
+document.getElementById('btnCancelEdit').addEventListener('click', closeEditModal);
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        switchTab(this.dataset.tab);
+    });
+});
+
+document.getElementById('btnInterest').addEventListener('click', function() {
+    const video = videos.find(v => String(v.id) === String(currentVideoId));
+    goToTelegram(video);
+});
+
+document.getElementById('btnLockTelegram').addEventListener('click', function() {
+    const video = videos.find(v => String(v.id) === String(currentVideoId));
+    goToTelegram(video);
+});
+
+searchInput.addEventListener('input', function() {
+    searchTerm = this.value;
+    renderVideos();
+});
+
+playerVideo.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
 
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
-        btnAdmin.click();
+        if (isAdmin) {
+            showPage('admin');
+        } else {
+            showPage('login');
+            adminPassword.value = '';
+            adminPassword.focus();
+        }
     }
 });
 
-// ============================================
-//  LIMPAR VISITANTE AO FECHAR
-// ============================================
-
 window.addEventListener('beforeunload', function() {
-    sb.from('live_visitors')
-        .delete()
-        .eq('session_id', SESSION_ID)
-        .then(() => {
-            console.log('Visitante removido');
-        })
-        .catch(() => {});
+    sb.from('live_visitors').delete().eq('session_id', SESSION_ID).then(() => {}).catch(() => {});
 });
 
-// ============================================
-//  INICIALIZAR
-// ============================================
+function maybeOpenSecretAdmin() {
+    const hash = (location.hash || '').toLowerCase();
+    const query = new URLSearchParams(location.search);
+    if (hash === '#painel' || query.get('painel') === '1') {
+        if (isAdmin) showPage('admin');
+        else {
+            showPage('login');
+            adminPassword.focus();
+        }
+    }
+}
 
-// Registrar visitante na home
+window.addEventListener('hashchange', maybeOpenSecretAdmin);
+maybeOpenSecretAdmin();
+
+applyTelegramLinks();
 registerVisitor('home', null);
-
-// Iniciar atualizacao de visitantes
 startVisitorUpdates();
-
-// Carregar videos
+loadRemoteSettings();
 loadVideos();
-
-console.log('Sistema de visitantes ao vivo ativado!');

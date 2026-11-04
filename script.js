@@ -1,14 +1,231 @@
 const SITE_SETTINGS_KEY = 'vb_site_settings';
+const LANG_KEY = 'vb_lang';
 const DEFAULT_SETTINGS = {
     telegram: '',
     previewSeconds: 12
 };
 
+const I18N = {
+    en: {
+        pageTitle: 'Mega Content — Exclusive Catalog',
+        logoTag: 'Exclusive catalog',
+        navCatalog: 'Catalog',
+        navPanel: 'Panel',
+        navLogout: 'Log out',
+        online: 'online',
+        heroKicker: 'Private collection · Delivered via Telegram',
+        heroTitle: 'Exclusive content,<br />selected for you.',
+        heroLead: 'Browse the catalog, watch the preview and buy the original video directly from the owner.',
+        viewCatalog: 'View catalog',
+        talkTelegram: 'Talk on Telegram',
+        statTitles: 'titles',
+        statCats: 'categories',
+        statOnline: 'online now',
+        searchPlaceholder: 'Search title or category...',
+        loadingCatalog: 'Loading catalog...',
+        loadError: 'Could not load videos',
+        emptyFilter: 'No videos in this filter',
+        all: 'All',
+        loginKicker: 'Restricted access',
+        loginTitle: 'Management panel',
+        loginLead: 'Owner only. Enter the password to manage the catalog.',
+        adminPassword: 'Admin password',
+        loginEnter: 'Enter panel',
+        backCatalog: 'Back to catalog',
+        adminKicker: 'Full management',
+        adminTitle: 'Owner panel',
+        tabDash: 'Overview',
+        tabVideos: 'Videos',
+        tabUpload: 'Publish',
+        tabSettings: 'Settings',
+        dashVideos: 'Videos in catalog',
+        dashOnline: 'Visitors online',
+        adminHint: 'Everything is managed here: prices, uploads, deletions and the Telegram contact. The public never sees this panel.',
+        colTitle: 'Title',
+        colCategory: 'Category',
+        colPrice: 'Price',
+        colSize: 'Size',
+        colActions: 'Actions',
+        noVideos: 'No videos published.',
+        uploading: 'Uploading...',
+        labelTitle: 'Video title',
+        phTitle: 'Commercial title',
+        labelDesc: 'Description',
+        phDesc: 'Description shown in the catalog',
+        labelCategory: 'Category',
+        labelPrice: 'Price (MT)',
+        labelFile: 'Video file',
+        fileHint: 'Formats: MP4, WebM (max. 50MB). The public only sees a 12-second preview.',
+        publish: 'Publish to catalog',
+        labelTelegram: 'Telegram username or link',
+        telegramHint: 'Anyone interested is redirected here with the video title and price.',
+        labelPreview: 'Public preview length (seconds)',
+        saveSettings: 'Save settings',
+        previewEnded: 'Preview ended',
+        buyFull: 'Get the full video',
+        buyFullLead: 'The original file is delivered by the owner on Telegram.',
+        imInterested: "I'm interested",
+        buyNow: 'Buy now',
+        buyCopy: 'Payment and original file delivery via Telegram. No download on this page.',
+        pointPrice: 'Price set by the owner',
+        pointNoDl: 'No public download',
+        pointTg: 'Direct deal on Telegram',
+        editVideo: 'Edit video',
+        save: 'Save',
+        cancel: 'Cancel',
+        deleteVideo: 'Delete video',
+        footerCopy: 'Private catalog. Videos for sale, delivered via Telegram.',
+        footerNote: 'Protected content. Download disabled.',
+        unknownSize: 'Size unknown',
+        noTelegram: 'The owner has not set a Telegram contact yet.',
+        notFound: 'Video not found!',
+        wrongPassword: 'Incorrect password!',
+        noPermission: 'No permission!',
+        needTitle: 'Enter a title.',
+        needFile: 'Select a file.',
+        fileTooBig: 'File too large! Maximum 50MB.',
+        badFormat: 'Invalid format! Use MP4 or WebM.',
+        published: 'Video published!',
+        settingsSaved: 'Settings saved.',
+        saveError: 'Could not save: ',
+        confirmDelete: 'Delete this video?',
+        confirmLogout: 'Leave the panel?',
+        telegramInterest: 'Hi, I am interested in the video "{title}" for {price}.',
+        previewTag: '{n}s preview',
+        noDesc: 'No description',
+        categoryLabel: 'Category: ',
+        notSet: 'Not set',
+        edit: 'Edit',
+        remove: 'Delete'
+    },
+    pt: {
+        pageTitle: 'Mega Content — Catalogo Exclusivo',
+        logoTag: 'Catalogo exclusivo',
+        navCatalog: 'Catalogo',
+        navPanel: 'Painel',
+        navLogout: 'Sair',
+        online: 'online',
+        heroKicker: 'Colecao privada · Entrega via Telegram',
+        heroTitle: 'Conteudo exclusivo,<br />selecionado para voce.',
+        heroLead: 'Navegue o catalogo, veja o preview e adquira o video original diretamente com o proprietario.',
+        viewCatalog: 'Ver catalogo',
+        talkTelegram: 'Falar no Telegram',
+        statTitles: 'titulos',
+        statCats: 'categorias',
+        statOnline: 'online agora',
+        searchPlaceholder: 'Buscar titulo ou categoria...',
+        loadingCatalog: 'A carregar catalogo...',
+        loadError: 'Erro ao carregar videos',
+        emptyFilter: 'Nenhum video neste filtro',
+        all: 'Todos',
+        loginKicker: 'Acesso restrito',
+        loginTitle: 'Painel de gestao',
+        loginLead: 'Apenas o proprietario. Digite a senha para gerir o catalogo.',
+        adminPassword: 'Senha de administrador',
+        loginEnter: 'Entrar no painel',
+        backCatalog: 'Voltar ao catalogo',
+        adminKicker: 'Gestao completa',
+        adminTitle: 'Painel do proprietario',
+        tabDash: 'Resumo',
+        tabVideos: 'Videos',
+        tabUpload: 'Publicar',
+        tabSettings: 'Definicoes',
+        dashVideos: 'Videos no catalogo',
+        dashOnline: 'Visitantes online',
+        adminHint: 'Tudo e gerido aqui: precos, publicacoes, exclusoes e o contacto do Telegram. O publico nao ve este painel.',
+        colTitle: 'Titulo',
+        colCategory: 'Categoria',
+        colPrice: 'Preco',
+        colSize: 'Tamanho',
+        colActions: 'Acoes',
+        noVideos: 'Nenhum video publicado.',
+        uploading: 'A enviar...',
+        labelTitle: 'Titulo do video',
+        phTitle: 'Titulo comercial',
+        labelDesc: 'Descricao',
+        phDesc: 'Descricao visivel no catalogo',
+        labelCategory: 'Categoria',
+        labelPrice: 'Preco (MT)',
+        labelFile: 'Arquivo de video',
+        fileHint: 'Formatos: MP4, WebM (max. 50MB). O publico ve apenas um preview de 12 segundos.',
+        publish: 'Publicar no catalogo',
+        labelTelegram: 'Utilizador ou link do Telegram',
+        telegramHint: 'Quem tiver interesse e redirecionado para este contacto, com o titulo e o preco do video.',
+        labelPreview: 'Duracao do preview publico (segundos)',
+        saveSettings: 'Guardar definicoes',
+        previewEnded: 'Preview encerrado',
+        buyFull: 'Adquira o video completo',
+        buyFullLead: 'O ficheiro original e entregue pelo proprietario no Telegram.',
+        imInterested: 'Tenho interesse',
+        buyNow: 'Adquirir agora',
+        buyCopy: 'Pagamento e entrega do ficheiro original via Telegram. Sem download nesta pagina.',
+        pointPrice: 'Preco definido pelo proprietario',
+        pointNoDl: 'Sem download publico',
+        pointTg: 'Negociacao direta no Telegram',
+        editVideo: 'Editar video',
+        save: 'Guardar',
+        cancel: 'Cancelar',
+        deleteVideo: 'Excluir video',
+        footerCopy: 'Catalogo privado. Videos a venda, entrega via Telegram.',
+        footerNote: 'Conteudo protegido. Download desativado.',
+        unknownSize: 'Tamanho desconhecido',
+        noTelegram: 'O proprietario ainda nao definiu o Telegram no painel.',
+        notFound: 'Video nao encontrado!',
+        wrongPassword: 'Senha incorreta!',
+        noPermission: 'Sem permissao!',
+        needTitle: 'Digite um titulo.',
+        needFile: 'Selecione um arquivo.',
+        fileTooBig: 'Arquivo muito grande! Maximo 50MB.',
+        badFormat: 'Formato invalido! Use MP4 ou WebM.',
+        published: 'Video publicado!',
+        settingsSaved: 'Definicoes guardadas.',
+        saveError: 'Erro ao guardar: ',
+        confirmDelete: 'Tem certeza que deseja excluir este video?',
+        confirmLogout: 'Deseja sair do painel?',
+        telegramInterest: 'Ola, tenho interesse no video "{title}" por {price}.',
+        previewTag: 'Preview de {n}s',
+        noDesc: 'Sem descricao',
+        categoryLabel: 'Categoria: ',
+        notSet: 'Nao definido',
+        edit: 'Editar',
+        remove: 'Excluir'
+    }
+};
+
+let currentLang = localStorage.getItem(LANG_KEY) || 'en';
+if (currentLang !== 'pt') currentLang = 'en';
+
+function t(key) {
+    return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+}
+
+function applyLanguage() {
+    document.documentElement.lang = currentLang === 'pt' ? 'pt' : 'en';
+    document.title = t('pageTitle');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        el.innerHTML = t(el.getAttribute('data-i18n-html'));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    document.querySelectorAll('#langSwitch button').forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.lang === currentLang);
+    });
+    const seconds = Number(siteSettings.previewSeconds) || 12;
+    if (previewTag) previewTag.textContent = t('previewTag').replace('{n}', seconds);
+    renderFilters();
+    renderVideos();
+    renderAdminVideos();
+    applyTelegramLinks();
+}
+
 let isAdmin = false;
 let currentVideoId = null;
 let videos = [];
-let comments = [];
-let activeCategory = 'Todos';
+let activeCategory = 'all';
 let searchTerm = '';
 let previewTimer = null;
 let siteSettings = loadSettings();
@@ -53,7 +270,7 @@ function telegramHref(video) {
     if (!base) return '';
     if (!video) return base;
     const text = encodeURIComponent(
-        'Ola, tenho interesse no video "' + video.title + '" por ' + formatPrice(video.price) + '.'
+        t('telegramInterest').replace('{title}', video.title).replace('{price}', formatPrice(video.price))
     );
     const sep = base.includes('?') ? '&' : '?';
     return base + sep + 'text=' + text;
@@ -70,8 +287,16 @@ function normalizeTelegram(value) {
 
 function formatPrice(value) {
     const amount = Number(value);
-    if (!Number.isFinite(amount) || amount < 0) return 'A consultar';
-    return amount.toLocaleString('pt-MZ') + ' MT';
+    if (!Number.isFinite(amount) || amount < 0) return '—';
+    return amount.toLocaleString(currentLang === 'pt' ? 'pt-MZ' : 'en-US') + ' MT';
+}
+
+function formatBytes(bytes) {
+    const size = Number(bytes);
+    if (!Number.isFinite(size) || size <= 0) return t('unknownSize');
+    if (size < 1024) return size + ' B';
+    if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
+    return (size / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
 function generateSecureId() {
@@ -82,12 +307,7 @@ function randomDate() {
     const now = new Date();
     const randomOffset = Math.floor(Math.random() * 86400000 * 7);
     const date = new Date(now.getTime() - randomOffset);
-    return date.toLocaleDateString('pt-BR');
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString(currentLang === 'pt' ? 'pt-BR' : 'en-US');
 }
 
 function cleanFileName(fileName) {
@@ -128,10 +348,9 @@ const playerTitle = document.getElementById('playerTitle');
 const playerDesc = document.getElementById('playerDesc');
 const playerCategory = document.getElementById('playerCategory');
 const playerPrice = document.getElementById('playerPrice');
-const commentInput = document.getElementById('commentInput');
-const commentAnonymous = document.getElementById('commentAnonymous');
-const btnSendComment = document.getElementById('btnSendComment');
-const commentsList = document.getElementById('commentsList');
+const playerPriceInline = document.getElementById('playerPriceInline');
+const playerSize = document.getElementById('playerSize');
+const buySize = document.getElementById('buySize');
 const lockOverlay = document.getElementById('lockOverlay');
 const previewTag = document.getElementById('previewTag');
 const searchInput = document.getElementById('searchInput');
@@ -246,15 +465,11 @@ function applyTelegramLinks() {
     ['headerTelegram', 'heroTelegram'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        if (href) {
-            el.href = href;
-            el.style.display = id === 'headerTelegram' ? 'inline-flex' : 'inline-flex';
-        } else {
-            el.style.display = 'none';
-        }
+        el.style.display = href ? 'inline-flex' : 'none';
+        if (href) el.href = href;
     });
     const dashTelegram = document.getElementById('dashTelegram');
-    if (dashTelegram) dashTelegram.textContent = siteSettings.telegram || 'Nao definido';
+    if (dashTelegram) dashTelegram.textContent = siteSettings.telegram || t('notSet');
 }
 
 async function verifyAdminPassword(password) {
@@ -273,6 +488,26 @@ async function verifyAdminPassword(password) {
     }
 }
 
+async function fetchVideoSize(url) {
+    try {
+        const res = await fetch(url, { method: 'HEAD' });
+        const len = res.headers.get('content-length');
+        const size = Number(len);
+        return Number.isFinite(size) && size > 0 ? size : 0;
+    } catch (error) {
+        return 0;
+    }
+}
+
+async function hydrateVideoSizes() {
+    await Promise.all(videos.map(async video => {
+        if (video.size) return;
+        video.size = await fetchVideoSize(video.url);
+    }));
+    renderVideos();
+    renderAdminVideos();
+}
+
 async function loadVideos() {
     try {
         loadingIndicator.style.display = 'block';
@@ -281,19 +516,21 @@ async function loadVideos() {
         videos = (data || []).map(video => ({
             id: video.id,
             title: video.title,
-            description: video.description || 'Sem descricao',
+            description: video.description || t('noDesc'),
             category: video.category || 'Geral',
             url: video.url,
             date: video.date || randomDate(),
-            price: video.price != null ? Number(video.price) : 0
+            price: video.price != null ? Number(video.price) : 0,
+            size: video.size != null ? Number(video.size) : 0
         }));
         renderFilters();
         renderVideos();
         renderAdminVideos();
         updateStats();
         loadingIndicator.style.display = 'none';
+        hydrateVideoSizes();
     } catch (error) {
-        loadingIndicator.innerHTML = '<h3>Erro ao carregar videos</h3><p>' + escapeHtml(error.message) + '</p>';
+        loadingIndicator.innerHTML = '<h3>' + t('loadError') + '</h3><p>' + escapeHtml(error.message) + '</p>';
     }
 }
 
@@ -309,7 +546,7 @@ function updateStats() {
 
 function filteredVideos() {
     return videos.filter(video => {
-        const matchCat = activeCategory === 'Todos' || video.category === activeCategory;
+        const matchCat = activeCategory === 'all' || video.category === activeCategory;
         const q = searchTerm.trim().toLowerCase();
         const matchSearch = !q || video.title.toLowerCase().includes(q) || (video.category || '').toLowerCase().includes(q);
         return matchCat && matchSearch;
@@ -317,10 +554,12 @@ function filteredVideos() {
 }
 
 function renderFilters() {
-    const cats = ['Todos', ...Array.from(new Set(videos.map(v => v.category).filter(Boolean)))];
-    categoryFilters.innerHTML = cats.map(cat =>
-        '<button type="button" class="filter-chip' + (cat === activeCategory ? ' is-active' : '') + '" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '</button>'
-    ).join('');
+    if (!categoryFilters) return;
+    const cats = ['all', ...Array.from(new Set(videos.map(v => v.category).filter(Boolean)))];
+    categoryFilters.innerHTML = cats.map(cat => {
+        const label = cat === 'all' ? t('all') : cat;
+        return '<button type="button" class="filter-chip' + (cat === activeCategory ? ' is-active' : '') + '" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(label) + '</button>';
+    }).join('');
     categoryFilters.querySelectorAll('.filter-chip').forEach(btn => {
         btn.addEventListener('click', function() {
             activeCategory = this.dataset.cat;
@@ -331,9 +570,10 @@ function renderFilters() {
 }
 
 function renderVideos() {
+    if (!videoGrid) return;
     const list = filteredVideos();
     if (list.length === 0) {
-        videoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><h3>Nenhum video neste filtro</h3></div>';
+        videoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><h3>' + t('emptyFilter') + '</h3></div>';
         return;
     }
     videoGrid.innerHTML = list.map((video, index) => `
@@ -342,10 +582,11 @@ function renderVideos() {
                 <video src="${escapeHtml(video.url)}" muted preload="metadata" playsinline></video>
                 <div class="thumb-overlay"></div>
                 <span class="preview-badge">Preview</span>
-                <span class="price-badge">${escapeHtml(formatPrice(video.price))}</span>
             </div>
             <div class="video-info">
                 <h3>${escapeHtml(video.title)}</h3>
+                <div class="card-price">${escapeHtml(formatPrice(video.price))}</div>
+                <div class="card-size">${escapeHtml(formatBytes(video.size))}</div>
                 <div class="meta">
                     <span>${escapeHtml(video.date)}</span>
                     <span class="category">${escapeHtml(video.category)}</span>
@@ -364,7 +605,7 @@ function renderAdminVideos() {
     const body = document.getElementById('adminVideoList');
     if (!body) return;
     if (!videos.length) {
-        body.innerHTML = '<tr><td colspan="4">Nenhum video publicado.</td></tr>';
+        body.innerHTML = '<tr><td colspan="5">' + t('noVideos') + '</td></tr>';
         return;
     }
     body.innerHTML = videos.map(video => `
@@ -372,10 +613,11 @@ function renderAdminVideos() {
             <td>${escapeHtml(video.title)}</td>
             <td>${escapeHtml(video.category)}</td>
             <td>${escapeHtml(formatPrice(video.price))}</td>
+            <td>${escapeHtml(formatBytes(video.size))}</td>
             <td>
                 <div class="table-actions">
-                    <button type="button" data-edit="${video.id}">Editar</button>
-                    <button type="button" data-del="${video.id}">Excluir</button>
+                    <button type="button" data-edit="${video.id}">${t('edit')}</button>
+                    <button type="button" data-del="${video.id}">${t('remove')}</button>
                 </div>
             </td>
         </tr>
@@ -406,16 +648,18 @@ async function saveVideoToSupabase(title, description, category, price, file) {
     const { data: urlData } = sb.storage.from('videos').getPublicUrl(fileName);
     const videoData = {
         title: title,
-        description: description || 'Sem descricao',
+        description: description || t('noDesc'),
         category: category || 'Geral',
         url: urlData.publicUrl,
         date: randomDate(),
-        price: Number(price) || 0
+        price: Number(price) || 0,
+        size: file.size || 0
     };
     const { data: insertData, error: insertError } = await sb.from('videos').insert([videoData]).select();
     if (insertError) {
         const fallback = { ...videoData };
         delete fallback.price;
+        delete fallback.size;
         const retry = await sb.from('videos').insert([fallback]).select();
         if (retry.error) throw retry.error;
         videos.unshift({ id: retry.data[0].id, ...videoData });
@@ -448,13 +692,12 @@ async function updateVideoMeta(id, fields) {
 }
 
 async function deleteVideoFromSupabase(videoId) {
-    if (!confirm('Tem certeza que deseja excluir este video?')) return;
+    if (!confirm(t('confirmDelete'))) return;
     const video = videos.find(v => String(v.id) === String(videoId));
     if (!video) return;
     const fileName = video.url.split('/').pop();
     if (fileName) await sb.storage.from('videos').remove([fileName]);
     await sb.from('videos').delete().eq('id', videoId);
-    await sb.from('comments').delete().eq('video_id', videoId);
     videos = videos.filter(v => String(v.id) !== String(videoId));
     renderVideos();
     renderAdminVideos();
@@ -463,70 +706,6 @@ async function deleteVideoFromSupabase(videoId) {
         showPage('home');
         currentVideoId = null;
     }
-}
-
-async function loadComments(videoId) {
-    try {
-        const { data, error } = await sb.from('comments').select('*').eq('video_id', videoId).order('created_at', { ascending: true });
-        if (error) throw error;
-        comments = data || [];
-        renderComments();
-    } catch (error) {
-        commentsList.innerHTML = '<p class="muted-center">Erro ao carregar comentarios</p>';
-    }
-}
-
-function renderComments() {
-    if (!comments.length) {
-        commentsList.innerHTML = '<p class="muted-center">Nenhum comentario ainda.</p>';
-        return;
-    }
-    commentsList.innerHTML = comments.map(comment => {
-        const isAnonymous = comment.author === 'Anonimo' || comment.is_anonymous;
-        const autor = isAnonymous ? 'Anonimo' : comment.author || 'Usuario';
-        return `
-            <div class="comment-item">
-                <div class="comment-header">
-                    <strong class="comment-author">${escapeHtml(autor)}</strong>
-                    <span class="comment-date">${escapeHtml(formatDate(comment.created_at))}</span>
-                    ${isAdmin ? '<button class="btn-delete-comment" data-id="' + comment.id + '">X</button>' : ''}
-                </div>
-                <p class="comment-text">${escapeHtml(comment.content)}</p>
-            </div>
-        `;
-    }).join('');
-    document.querySelectorAll('.btn-delete-comment').forEach(btn => {
-        btn.addEventListener('click', function() {
-            deleteComment(this.dataset.id);
-        });
-    });
-}
-
-async function sendComment(videoId, content, isAnonymous) {
-    if (!content.trim()) {
-        alert('Digite um comentario!');
-        return;
-    }
-    const commentData = {
-        video_id: videoId,
-        content: content.trim(),
-        author: isAnonymous ? 'Anonimo' : 'Usuario',
-        is_anonymous: isAnonymous
-    };
-    const { error } = await sb.from('comments').insert([commentData]).select();
-    if (error) {
-        alert('Erro ao enviar comentario: ' + error.message);
-        return;
-    }
-    await loadComments(videoId);
-    commentInput.value = '';
-    commentAnonymous.checked = false;
-}
-
-async function deleteComment(commentId) {
-    if (!confirm('Excluir este comentario?')) return;
-    await sb.from('comments').delete().eq('id', commentId);
-    await loadComments(currentVideoId);
 }
 
 function clearPreviewLock() {
@@ -541,7 +720,7 @@ function clearPreviewLock() {
 function armPreviewLock() {
     clearPreviewLock();
     const seconds = Number(siteSettings.previewSeconds) || 12;
-    previewTag.textContent = 'Preview de ' + seconds + 's';
+    previewTag.textContent = t('previewTag').replace('{n}', seconds);
     const lockNow = function() {
         playerVideo.pause();
         playerVideo.controls = false;
@@ -559,7 +738,7 @@ function armPreviewLock() {
 function goToTelegram(video) {
     const href = telegramHref(video);
     if (!href) {
-        alert('O proprietario ainda nao definiu o Telegram no painel.');
+        alert(t('noTelegram'));
         return;
     }
     window.open(href, '_blank', 'noopener,noreferrer');
@@ -568,7 +747,7 @@ function goToTelegram(video) {
 function openPlayer(id) {
     const video = videos.find(v => String(v.id) === String(id));
     if (!video) {
-        alert('Video nao encontrado!');
+        alert(t('notFound'));
         return;
     }
     currentVideoId = id;
@@ -578,13 +757,17 @@ function openPlayer(id) {
     playerVideo.setAttribute('controlsList', 'nodownload noplaybackrate noremoteplayback');
     playerVideo.load();
     playerTitle.textContent = video.title;
-    playerDesc.textContent = video.description || 'Sem descricao';
-    playerCategory.innerHTML = 'Categoria: <span>' + escapeHtml(video.category) + '</span>';
-    playerPrice.textContent = formatPrice(video.price);
+    playerDesc.textContent = video.description || t('noDesc');
+    playerCategory.innerHTML = t('categoryLabel') + '<span>' + escapeHtml(video.category) + '</span>';
+    const priceText = formatPrice(video.price);
+    const sizeText = formatBytes(video.size);
+    playerPrice.textContent = priceText;
+    if (playerPriceInline) playerPriceInline.textContent = priceText;
+    if (playerSize) playerSize.textContent = sizeText;
+    if (buySize) buySize.textContent = sizeText;
     btnDelete.style.display = isAdmin ? 'inline-flex' : 'none';
     showPage('player');
     registerVisitor('player', id);
-    loadComments(id);
     playerVideo.play().catch(() => {});
     armPreviewLock();
 }
@@ -648,7 +831,7 @@ btnAdminPanel.addEventListener('click', () => {
 });
 
 btnLogout.addEventListener('click', () => {
-    if (confirm('Deseja sair do painel?')) logoutAdmin();
+    if (confirm(t('confirmLogout'))) logoutAdmin();
 });
 
 btnCancelLogin.addEventListener('click', () => showPage('home'));
@@ -663,18 +846,6 @@ btnDelete.addEventListener('click', function() {
     deleteVideoFromSupabase(currentVideoId);
 });
 
-btnSendComment.addEventListener('click', function() {
-    if (!currentVideoId) return;
-    sendComment(currentVideoId, commentInput.value, commentAnonymous.checked);
-});
-
-commentInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && e.ctrlKey) {
-        e.preventDefault();
-        btnSendComment.click();
-    }
-});
-
 loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const isValid = await verifyAdminPassword(adminPassword.value);
@@ -683,7 +854,7 @@ loginForm.addEventListener('submit', async function(e) {
         uploadForm.reset();
         uploadFile.value = '';
     } else {
-        alert('Senha incorreta!');
+        alert(t('wrongPassword'));
         adminPassword.value = '';
     }
 });
@@ -691,7 +862,7 @@ loginForm.addEventListener('submit', async function(e) {
 uploadForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     if (!isAdmin) {
-        alert('Sem permissao!');
+        alert(t('noPermission'));
         return;
     }
     const title = document.getElementById('videoTitle').value.trim();
@@ -699,19 +870,19 @@ uploadForm.addEventListener('submit', async function(e) {
     const category = document.getElementById('videoCategory').value;
     const price = document.getElementById('videoPrice').value;
     const file = uploadFile.files[0];
-    if (!title) { alert('Digite um titulo.'); return; }
-    if (!file) { alert('Selecione um arquivo.'); return; }
-    if (file.size > 50 * 1024 * 1024) { alert('Arquivo muito grande! Maximo 50MB.'); return; }
-    if (!file.type.startsWith('video/')) { alert('Formato invalido! Use MP4 ou WebM.'); return; }
+    if (!title) { alert(t('needTitle')); return; }
+    if (!file) { alert(t('needFile')); return; }
+    if (file.size > 50 * 1024 * 1024) { alert(t('fileTooBig')); return; }
+    if (!file.type.startsWith('video/')) { alert(t('badFormat')); return; }
     try {
         await saveVideoToSupabase(title, description, category, price, file);
         uploadForm.reset();
         uploadFile.value = '';
         await loadVideos();
         switchTab('videos');
-        alert('Video publicado!');
+        alert(t('published'));
     } catch (error) {
-        alert('Erro: ' + error.message);
+        alert(error.message);
     }
 });
 
@@ -728,7 +899,7 @@ document.getElementById('settingsForm').addEventListener('submit', async functio
     } catch (error) {
         // settings stay local if extra columns do not exist yet
     }
-    alert('Definicoes guardadas.');
+    alert(t('settingsSaved'));
 });
 
 editForm.addEventListener('submit', async function(e) {
@@ -743,7 +914,7 @@ editForm.addEventListener('submit', async function(e) {
         });
         closeEditModal();
     } catch (error) {
-        alert('Erro ao guardar: ' + error.message);
+        alert(t('saveError') + error.message);
     }
 });
 
@@ -772,6 +943,14 @@ searchInput.addEventListener('input', function() {
 
 playerVideo.addEventListener('contextmenu', function(e) {
     e.preventDefault();
+});
+
+document.getElementById('langSwitch').addEventListener('click', function(e) {
+    const btn = e.target.closest('button[data-lang]');
+    if (!btn) return;
+    currentLang = btn.dataset.lang === 'pt' ? 'pt' : 'en';
+    localStorage.setItem(LANG_KEY, currentLang);
+    applyLanguage();
 });
 
 document.addEventListener('keydown', function(e) {
@@ -806,6 +985,7 @@ function maybeOpenSecretAdmin() {
 window.addEventListener('hashchange', maybeOpenSecretAdmin);
 maybeOpenSecretAdmin();
 
+applyLanguage();
 applyTelegramLinks();
 registerVisitor('home', null);
 startVisitorUpdates();

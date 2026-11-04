@@ -165,6 +165,31 @@ nav {
     background: rgba(255, 255, 255, 0.04);
 }
 
+.lang-switch {
+    display: flex;
+    background: rgba(255, 45, 85, 0.1);
+    border: 1px solid rgba(255, 77, 109, 0.28);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.lang-switch button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 7px 11px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+}
+
+.lang-switch button.is-active {
+    background: linear-gradient(160deg, #ff5d7a, #e11d48);
+    color: #fff7f4;
+}
+
 .nav-telegram {
     color: #ffe0d6;
     text-decoration: none;
@@ -439,19 +464,6 @@ main {
     background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent 55%);
 }
 
-.price-badge {
-    position: absolute;
-    left: 12px;
-    bottom: 12px;
-    background: rgba(80, 8, 22, 0.9);
-    color: #ffd08a;
-    border: 1px solid rgba(255, 77, 109, 0.45);
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
 .preview-badge {
     position: absolute;
     right: 12px;
@@ -473,6 +485,19 @@ main {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.card-price {
+    color: #ffd08a;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.card-size {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 10px;
 }
 
 .video-info .meta {
@@ -737,6 +762,27 @@ main {
 
 .player-main h2 {
     margin: 18px 0 8px;
+}
+
+.player-meta-block {
+    margin: 0 0 12px;
+}
+
+.player-price {
+    color: #ffd08a;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.player-size,
+.buy-size {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.buy-size {
+    margin-bottom: 12px;
 }
 
 .player-main p,

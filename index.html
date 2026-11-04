@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vazados Mega Content — Catalogo Exclusivo</title>
+    <title>Mega Content — Exclusive Catalog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -37,61 +37,65 @@
     <div class="bg-orb bg-orb-3"></div>
 
     <header>
-        <div class="logo" id="logoHome" title="Vazados da BANDA">
-            <span class="logo-mark">VB</span>
+        <div class="logo" id="logoHome" title="Mega Content">
+            <span class="logo-mark">MC</span>
             <span class="logo-text">
                 <strong>Mega Content</strong>
-                <small>Catalogo exclusivo</small>
+                <small data-i18n="logoTag">Exclusive catalog</small>
             </span>
         </div>
         <nav>
-            <button type="button" id="btnHome" class="nav-link is-active">Catalogo</button>
+            <button type="button" id="btnHome" class="nav-link is-active" data-i18n="navCatalog">Catalog</button>
             <a id="headerTelegram" class="nav-telegram" href="#" target="_blank" rel="noopener noreferrer" style="display: none;">Telegram</a>
-            <button type="button" id="btnAdminPanel" class="nav-link" style="display: none;">Painel</button>
-            <button type="button" id="btnLogout" style="display: none;">Sair</button>
+            <button type="button" id="btnAdminPanel" class="nav-link" style="display: none;" data-i18n="navPanel">Panel</button>
+            <button type="button" id="btnLogout" style="display: none;" data-i18n="navLogout">Log out</button>
+            <div class="lang-switch" id="langSwitch">
+                <button type="button" data-lang="en" class="is-active">EN</button>
+                <button type="button" data-lang="pt">PT</button>
+            </div>
             <div class="live-chip" id="liveChip">
                 <span class="live-dot"></span>
                 <span id="visitorCountGlobal">0</span>
-                <span class="live-label">online</span>
+                <span class="live-label" data-i18n="online">online</span>
             </div>
         </nav>
     </header>
 
     <main id="pageHome">
         <section class="hero">
-            <p class="hero-kicker">Colecao privada · Entrega via Telegram</p>
-            <h1>Conteudo exclusivo,<br />selecionado para voce.</h1>
-            <p class="hero-lead">Navegue o catalogo, veja o preview e adquira o video original diretamente com o proprietario.</p>
+            <p class="hero-kicker" data-i18n="heroKicker">Private collection · Delivered via Telegram</p>
+            <h1 data-i18n-html="heroTitle">Exclusive content,<br />selected for you.</h1>
+            <p class="hero-lead" data-i18n="heroLead">Browse the catalog, watch the preview and buy the original video directly from the owner.</p>
             <div class="hero-actions">
-                <a class="btn-gold" href="#catalogo">Ver catalogo</a>
-                <a id="heroTelegram" class="btn-ghost" href="#" target="_blank" rel="noopener noreferrer">Falar no Telegram</a>
+                <a class="btn-gold" href="#catalogo" data-i18n="viewCatalog">View catalog</a>
+                <a id="heroTelegram" class="btn-ghost" href="#" target="_blank" rel="noopener noreferrer" data-i18n="talkTelegram">Talk on Telegram</a>
             </div>
             <div class="hero-stats">
                 <div>
                     <strong id="statVideos">0</strong>
-                    <span>titulos</span>
+                    <span data-i18n="statTitles">titles</span>
                 </div>
                 <div>
                     <strong id="statCats">0</strong>
-                    <span>categorias</span>
+                    <span data-i18n="statCats">categories</span>
                 </div>
                 <div>
                     <strong id="statOnline">0</strong>
-                    <span>online agora</span>
+                    <span data-i18n="statOnline">online now</span>
                 </div>
             </div>
         </section>
 
         <section class="toolbar" id="catalogo">
             <div class="search-wrap">
-                <input type="search" id="searchInput" placeholder="Buscar titulo ou categoria..." autocomplete="off" />
+                <input type="search" id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search title or category..." autocomplete="off" />
             </div>
             <div class="filters" id="categoryFilters"></div>
         </section>
 
         <div id="loadingIndicator" class="loading-state">
             <div class="spinner"></div>
-            <h3>A carregar catalogo...</h3>
+            <h3 data-i18n="loadingCatalog">Loading catalog...</h3>
         </div>
         <section class="video-grid" id="videoGrid"></section>
     </main>
@@ -99,13 +103,13 @@
     <main id="pageLogin" style="display: none;">
         <div class="login-container">
             <div class="login-box">
-                <p class="hero-kicker">Acesso restrito</p>
-                <h2>Painel de gestao</h2>
-                <p>Apenas o proprietario. Digite a senha para gerir o catalogo.</p>
+                <p class="hero-kicker" data-i18n="loginKicker">Restricted access</p>
+                <h2 data-i18n="loginTitle">Management panel</h2>
+                <p data-i18n="loginLead">Owner only. Enter the password to manage the catalog.</p>
                 <form id="loginForm">
-                    <input type="password" id="adminPassword" placeholder="Senha de administrador" autocomplete="current-password" />
-                    <button type="submit" class="btn-primary">Entrar no painel</button>
-                    <button type="button" class="btn-secondary" id="btnCancelLogin">Voltar ao catalogo</button>
+                    <input type="password" id="adminPassword" data-i18n-placeholder="adminPassword" placeholder="Admin password" autocomplete="current-password" />
+                    <button type="submit" class="btn-primary" data-i18n="loginEnter">Enter panel</button>
+                    <button type="button" class="btn-secondary" id="btnCancelLogin" data-i18n="backCatalog">Back to catalog</button>
                 </form>
             </div>
         </div>
@@ -115,25 +119,25 @@
         <section class="admin-shell">
             <div class="admin-head">
                 <div>
-                    <p class="hero-kicker">Gestao completa</p>
-                    <h2>Painel do proprietario</h2>
+                    <p class="hero-kicker" data-i18n="adminKicker">Full management</p>
+                    <h2 data-i18n="adminTitle">Owner panel</h2>
                 </div>
                 <div class="admin-tabs">
-                    <button type="button" class="tab-btn is-active" data-tab="dash">Resumo</button>
-                    <button type="button" class="tab-btn" data-tab="videos">Videos</button>
-                    <button type="button" class="tab-btn" data-tab="upload">Publicar</button>
-                    <button type="button" class="tab-btn" data-tab="settings">Definicoes</button>
+                    <button type="button" class="tab-btn is-active" data-tab="dash" data-i18n="tabDash">Overview</button>
+                    <button type="button" class="tab-btn" data-tab="videos" data-i18n="tabVideos">Videos</button>
+                    <button type="button" class="tab-btn" data-tab="upload" data-i18n="tabUpload">Publish</button>
+                    <button type="button" class="tab-btn" data-tab="settings" data-i18n="tabSettings">Settings</button>
                 </div>
             </div>
 
             <div class="admin-tab" id="tabDash">
                 <div class="dash-grid">
                     <article class="dash-card">
-                        <span>Videos no catalogo</span>
+                        <span data-i18n="dashVideos">Videos in catalog</span>
                         <strong id="dashVideoCount">0</strong>
                     </article>
                     <article class="dash-card">
-                        <span>Visitantes online</span>
+                        <span data-i18n="dashOnline">Visitors online</span>
                         <strong id="dashOnlineCount">0</strong>
                     </article>
                     <article class="dash-card">
@@ -141,7 +145,7 @@
                         <strong id="dashTelegram">—</strong>
                     </article>
                 </div>
-                <p class="admin-hint">Tudo e gerido aqui: precos, publicacoes, exclusoes e o contacto do Telegram. O publico nao ve este painel.</p>
+                <p class="admin-hint" data-i18n="adminHint">Everything is managed here: prices, uploads, deletions and the Telegram contact. The public never sees this panel.</p>
             </div>
 
             <div class="admin-tab" id="tabVideos" style="display: none;">
@@ -149,10 +153,11 @@
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>Titulo</th>
-                                <th>Categoria</th>
-                                <th>Preco</th>
-                                <th>Acoes</th>
+                                <th data-i18n="colTitle">Title</th>
+                                <th data-i18n="colCategory">Category</th>
+                                <th data-i18n="colPrice">Price</th>
+                                <th data-i18n="colSize">Size</th>
+                                <th data-i18n="colActions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="adminVideoList"></tbody>
@@ -163,7 +168,7 @@
             <div class="admin-tab" id="tabUpload" style="display: none;">
                 <div id="uploadProgress" style="display: none;">
                     <div class="progress-meta">
-                        <span>A enviar...</span>
+                        <span data-i18n="uploading">Uploading...</span>
                         <span id="progressPercent">0%</span>
                     </div>
                     <div class="progress-track">
@@ -172,16 +177,16 @@
                 </div>
                 <form id="uploadForm">
                     <div class="form-group">
-                        <label>Titulo do video</label>
-                        <input type="text" id="videoTitle" required placeholder="Titulo comercial" />
+                        <label data-i18n="labelTitle">Video title</label>
+                        <input type="text" id="videoTitle" required data-i18n-placeholder="phTitle" placeholder="Commercial title" />
                     </div>
                     <div class="form-group">
-                        <label>Descricao</label>
-                        <textarea id="videoDesc" rows="4" placeholder="Descricao visivel no catalogo"></textarea>
+                        <label data-i18n="labelDesc">Description</label>
+                        <textarea id="videoDesc" rows="4" data-i18n-placeholder="phDesc" placeholder="Description shown in the catalog"></textarea>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Categoria</label>
+                            <label data-i18n="labelCategory">Category</label>
                             <select id="videoCategory">
                                 <option value="Vazados Hot">Vazados HOT</option>
                                 <option value="Vazados de celebridades">Vazados de Celebridades</option>
@@ -189,31 +194,31 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Preco (MT)</label>
-                            <input type="number" id="videoPrice" min="0" step="1" required placeholder="Ex: 1500" />
+                            <label data-i18n="labelPrice">Price (MT)</label>
+                            <input type="number" id="videoPrice" min="0" step="1" required placeholder="1500" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Arquivo de video</label>
+                        <label data-i18n="labelFile">Video file</label>
                         <input type="file" id="uploadFile" accept="video/*" required />
-                        <small>Formatos: MP4, WebM (max. 50MB). O publico ve apenas um preview de 12 segundos.</small>
+                        <small data-i18n="fileHint">Formats: MP4, WebM (max. 50MB). The public only sees a 12-second preview.</small>
                     </div>
-                    <button type="submit" class="btn-primary">Publicar no catalogo</button>
+                    <button type="submit" class="btn-primary" data-i18n="publish">Publish to catalog</button>
                 </form>
             </div>
 
             <div class="admin-tab" id="tabSettings" style="display: none;">
                 <form id="settingsForm">
                     <div class="form-group">
-                        <label>Utilizador ou link do Telegram</label>
-                        <input type="text" id="telegramInput" placeholder="@seuuser ou https://t.me/seuuser" />
-                        <small>Quem tiver interesse e redirecionado para este contacto, com o titulo e o preco do video.</small>
+                        <label data-i18n="labelTelegram">Telegram username or link</label>
+                        <input type="text" id="telegramInput" placeholder="@youruser or https://t.me/youruser" />
+                        <small data-i18n="telegramHint">Anyone interested is redirected here with the video title and price.</small>
                     </div>
                     <div class="form-group">
-                        <label>Duracao do preview publico (segundos)</label>
+                        <label data-i18n="labelPreview">Public preview length (seconds)</label>
                         <input type="number" id="previewSeconds" min="5" max="30" value="12" />
                     </div>
-                    <button type="submit" class="btn-primary">Guardar definicoes</button>
+                    <button type="submit" class="btn-primary" data-i18n="saveSettings">Save settings</button>
                 </form>
             </div>
         </section>
@@ -231,52 +236,40 @@
                         disablepictureinpicture
                         oncontextmenu="return false;"
                     ></video>
-                    <div class="preview-tag" id="previewTag">Preview de 12s</div>
+                    <div class="preview-tag" id="previewTag">12s preview</div>
                     <div class="lock-overlay" id="lockOverlay">
                         <div>
-                            <p class="hero-kicker">Preview encerrado</p>
-                            <h3>Adquira o video completo</h3>
-                            <p>O ficheiro original e entregue pelo proprietario no Telegram.</p>
-                            <button type="button" class="btn-gold" id="btnLockTelegram">Tenho interesse</button>
+                            <p class="hero-kicker" data-i18n="previewEnded">Preview ended</p>
+                            <h3 data-i18n="buyFull">Get the full video</h3>
+                            <p data-i18n="buyFullLead">The original file is delivered by the owner on Telegram.</p>
+                            <button type="button" class="btn-gold" id="btnLockTelegram" data-i18n="imInterested">I'm interested</button>
                         </div>
                     </div>
                 </div>
-                <h2 id="playerTitle">Titulo do Video</h2>
-                <p id="playerDesc">Descricao</p>
-                <p id="playerCategory">Categoria: <span></span></p>
+                <h2 id="playerTitle">Video title</h2>
+                <div class="player-meta-block">
+                    <div class="player-price" id="playerPriceInline">0 MT</div>
+                    <p class="player-size" id="playerSize">—</p>
+                </div>
+                <p id="playerDesc">Description</p>
+                <p id="playerCategory">Category: <span></span></p>
 
                 <div class="player-actions">
-                    <button type="button" id="btnBack" class="btn-secondary">Voltar ao catalogo</button>
-                    <button type="button" id="btnDelete" class="btn-delete" style="display: none;">Excluir video</button>
-                </div>
-
-                <div class="comments-section">
-                    <h3>Comentarios</h3>
-                    <div class="comment-form">
-                        <textarea id="commentInput" rows="3" placeholder="Escreva um comentario..."></textarea>
-                        <div class="comment-options">
-                            <label>
-                                <input type="checkbox" id="commentAnonymous" />
-                                Comentar anonimamente
-                            </label>
-                            <button type="button" id="btnSendComment" class="btn-primary-small">Enviar</button>
-                        </div>
-                    </div>
-                    <div id="commentsList" class="comments-list">
-                        <p class="muted-center">A carregar comentarios...</p>
-                    </div>
+                    <button type="button" id="btnBack" class="btn-secondary" data-i18n="backCatalog">Back to catalog</button>
+                    <button type="button" id="btnDelete" class="btn-delete" style="display: none;" data-i18n="deleteVideo">Delete video</button>
                 </div>
             </div>
 
             <aside class="buy-panel">
-                <p class="hero-kicker">Adquirir agora</p>
+                <p class="hero-kicker" data-i18n="buyNow">Buy now</p>
                 <div class="buy-price" id="playerPrice">0 MT</div>
-                <p class="buy-copy">Pagamento e entrega do ficheiro original via Telegram. Sem download nesta pagina.</p>
-                <button type="button" class="btn-telegram-cta" id="btnInterest">Tenho interesse</button>
+                <p class="buy-size" id="buySize">—</p>
+                <p class="buy-copy" data-i18n="buyCopy">Payment and original file delivery via Telegram. No download on this page.</p>
+                <button type="button" class="btn-telegram-cta" id="btnInterest" data-i18n="imInterested">I'm interested</button>
                 <ul class="buy-points">
-                    <li>Preco definido pelo proprietario</li>
-                    <li>Sem download publico</li>
-                    <li>Negociacao direta no Telegram</li>
+                    <li data-i18n="pointPrice">Price set by the owner</li>
+                    <li data-i18n="pointNoDl">No public download</li>
+                    <li data-i18n="pointTg">Direct deal on Telegram</li>
                 </ul>
             </aside>
         </div>
@@ -284,20 +277,20 @@
 
     <div class="modal" id="editModal" style="display: none;">
         <div class="modal-card">
-            <h3>Editar video</h3>
+            <h3 data-i18n="editVideo">Edit video</h3>
             <form id="editForm">
                 <input type="hidden" id="editVideoId" />
                 <div class="form-group">
-                    <label>Titulo</label>
+                    <label data-i18n="colTitle">Title</label>
                     <input type="text" id="editTitle" required />
                 </div>
                 <div class="form-group">
-                    <label>Descricao</label>
+                    <label data-i18n="labelDesc">Description</label>
                     <textarea id="editDesc" rows="3"></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Categoria</label>
+                        <label data-i18n="labelCategory">Category</label>
                         <select id="editCategory">
                             <option value="Vazados Hot">Vazados HOT</option>
                             <option value="Vazados de celebridades">Vazados de Celebridades</option>
@@ -305,13 +298,13 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Preco (MT)</label>
+                        <label data-i18n="labelPrice">Price (MT)</label>
                         <input type="number" id="editPrice" min="0" step="1" required />
                     </div>
                 </div>
                 <div class="modal-actions">
-                    <button type="submit" class="btn-primary">Guardar</button>
-                    <button type="button" class="btn-secondary" id="btnCancelEdit">Cancelar</button>
+                    <button type="submit" class="btn-primary" data-i18n="save">Save</button>
+                    <button type="button" class="btn-secondary" id="btnCancelEdit" data-i18n="cancel">Cancel</button>
                 </div>
             </form>
         </div>
@@ -320,9 +313,9 @@
     <footer>
         <div>
             <strong>Mega Content</strong>
-            <p>Catalogo privado. Videos a venda, entrega via Telegram.</p>
+            <p data-i18n="footerCopy">Private catalog. Videos for sale, delivered via Telegram.</p>
         </div>
-        <p class="footer-note">Conteudo protegido. Download desativado.</p>
+        <p class="footer-note" data-i18n="footerNote">Protected content. Download disabled.</p>
     </footer>
 
     <script src="script.js"></script>

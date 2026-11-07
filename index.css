@@ -839,6 +839,75 @@ main {
     width: 100%;
 }
 
+.pay-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 4px 0 6px;
+}
+
+.pay-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 13px 16px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.pay-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+.pay-btn .pay-ico {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.pay-paypal { background: #003087; }
+.pay-crypto { background: #2b2f36; }
+.pay-binance { background: #f3ba2f; color: #1a1400; }
+.pay-binance .pay-ico { background: #1a1400; color: #f3ba2f; }
+.pay-cashapp { background: #00d64f; color: #06240f; }
+.pay-cashapp .pay-ico { background: rgba(0, 0, 0, 0.18); color: #fff; }
+.pay-stripe { background: #635bff; }
+
+.pay-lead {
+    color: var(--muted);
+    margin: -6px 0 16px;
+}
+
+.pay-modal-card {
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+}
+
 .buy-points {
     margin-top: 18px;
     padding-left: 18px;

@@ -1,9 +1,18 @@
 const SITE_SETTINGS_KEY = 'vb_site_settings';
 const LANG_KEY = 'vb_lang';
+const DEFAULT_TELEGRAM = 'https://t.me/Hannah_Blake';
 const DEFAULT_SETTINGS = {
-    telegram: '',
+    telegram: DEFAULT_TELEGRAM,
     previewSeconds: 12
 };
+
+const PAYMENT_METHODS = [
+    { id: 'paypal', name: 'PayPal', cls: 'pay-paypal', icon: 'P' },
+    { id: 'crypto', name: 'Crypto', cls: 'pay-crypto', icon: 'B' },
+    { id: 'binance', name: 'Binance Gift Card', cls: 'pay-binance', icon: 'Bn' },
+    { id: 'cashapp', name: 'Cash App', cls: 'pay-cashapp', icon: '$' },
+    { id: 'stripe', name: 'Stripe', cls: 'pay-stripe', icon: 'S' }
+];
 
 const I18N = {
     en: {
@@ -53,7 +62,7 @@ const I18N = {
         labelDesc: 'Description',
         phDesc: 'Description shown in the catalog',
         labelCategory: 'Category',
-        labelPrice: 'Price (MT)',
+        labelPrice: 'Price (USD)',
         labelFile: 'Video file',
         fileHint: 'Formats: MP4, WebM (max. 50MB). The public only sees a 12-second preview.',
         publish: 'Publish to catalog',
@@ -65,11 +74,14 @@ const I18N = {
         buyFull: 'Get the full video',
         buyFullLead: 'The original file is delivered by the owner on Telegram.',
         imInterested: "I'm interested",
+        choosePay: 'Choose payment method',
+        payTitle: 'Choose Payment Method',
+        payLead: 'Select your preferred payment method:',
         buyNow: 'Buy now',
-        buyCopy: 'Payment and original file delivery via Telegram. No download on this page.',
-        pointPrice: 'Price set by the owner',
+        buyCopy: 'Choose a payment method. You will be redirected to Telegram with your order details.',
+        pointPrice: 'Price in USD',
         pointNoDl: 'No public download',
-        pointTg: 'Direct deal on Telegram',
+        pointTg: 'Order completed on Telegram',
         editVideo: 'Edit video',
         save: 'Save',
         cancel: 'Cancel',
@@ -90,7 +102,7 @@ const I18N = {
         saveError: 'Could not save: ',
         confirmDelete: 'Delete this video?',
         confirmLogout: 'Leave the panel?',
-        telegramInterest: 'Hi, I am interested in the video "{title}" for {price}.',
+        telegramInterest: 'Hello Hannah,\n\nI hope you are well.\n\nI would like to buy this video:\n• Title: {title}\n• Category: {category}\n• Size: {size}\n• Price: {price}\n• Payment method: {method}\n\nPlease send me the payment details to complete the order.\n\nThank you.',
         previewTag: '{n}s preview',
         noDesc: 'No description',
         categoryLabel: 'Category: ',
@@ -145,7 +157,7 @@ const I18N = {
         labelDesc: 'Descricao',
         phDesc: 'Descricao visivel no catalogo',
         labelCategory: 'Categoria',
-        labelPrice: 'Preco (MT)',
+        labelPrice: 'Preco (USD)',
         labelFile: 'Arquivo de video',
         fileHint: 'Formatos: MP4, WebM (max. 50MB). O publico ve apenas um preview de 12 segundos.',
         publish: 'Publicar no catalogo',
@@ -157,11 +169,14 @@ const I18N = {
         buyFull: 'Adquira o video completo',
         buyFullLead: 'O ficheiro original e entregue pelo proprietario no Telegram.',
         imInterested: 'Tenho interesse',
+        choosePay: 'Escolher metodo de pagamento',
+        payTitle: 'Escolha o metodo de pagamento',
+        payLead: 'Selecione o metodo de pagamento preferido:',
         buyNow: 'Adquirir agora',
-        buyCopy: 'Pagamento e entrega do ficheiro original via Telegram. Sem download nesta pagina.',
-        pointPrice: 'Preco definido pelo proprietario',
+        buyCopy: 'Escolha um metodo de pagamento. Sera redirecionado para o Telegram com os dados do pedido.',
+        pointPrice: 'Preco em USD',
         pointNoDl: 'Sem download publico',
-        pointTg: 'Negociacao direta no Telegram',
+        pointTg: 'Pedido concluido no Telegram',
         editVideo: 'Editar video',
         save: 'Guardar',
         cancel: 'Cancelar',
@@ -182,7 +197,7 @@ const I18N = {
         saveError: 'Erro ao guardar: ',
         confirmDelete: 'Tem certeza que deseja excluir este video?',
         confirmLogout: 'Deseja sair do painel?',
-        telegramInterest: 'Ola, tenho interesse no video "{title}" por {price}.',
+        telegramInterest: 'Ola Hannah,\n\nEspero que esteja bem.\n\nQuero comprar este video:\n• Titulo: {title}\n• Categoria: {category}\n• Tamanho: {size}\n• Preco: {price}\n• Metodo de pagamento: {method}\n\nPor favor envie os dados de pagamento para eu concluir o pedido.\n\nObrigado.',
         previewTag: 'Preview de {n}s',
         noDesc: 'Sem descricao',
         categoryLabel: 'Categoria: ',
@@ -219,6 +234,7 @@ function applyLanguage() {
     renderFilters();
     renderVideos();
     renderAdminVideos();
+    renderPayButtons();
     applyTelegramLinks();
 }
 
@@ -251,8 +267,10 @@ let visitorUpdateInterval = null;
 function loadSettings() {
     try {
         const raw = localStorage.getItem(SITE_SETTINGS_KEY);
-        if (!raw) return { ...DEFAULT_SETTINGS };
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+        const parsed = raw ? JSON.parse(raw) : {};
+        const next = { ...DEFAULT_SETTINGS, ...parsed };
+        if (!next.telegram) next.telegram = DEFAULT_TELEGRAM;
+        return next;
     } catch (error) {
         return { ...DEFAULT_SETTINGS };
     }
@@ -264,16 +282,22 @@ function saveSettingsLocal(next) {
     applyTelegramLinks();
 }
 
-function telegramHref(video) {
-    const contact = (siteSettings.telegram || '').trim();
-    const base = normalizeTelegram(contact);
+function telegramBase() {
+    return normalizeTelegram((siteSettings.telegram || DEFAULT_TELEGRAM).trim() || DEFAULT_TELEGRAM);
+}
+
+function telegramHref(video, methodName) {
+    const base = telegramBase();
     if (!base) return '';
     if (!video) return base;
-    const text = encodeURIComponent(
-        t('telegramInterest').replace('{title}', video.title).replace('{price}', formatPrice(video.price))
-    );
+    const msg = t('telegramInterest')
+        .replace('{title}', video.title || '')
+        .replace('{category}', video.category || '')
+        .replace('{size}', formatBytes(video.size))
+        .replace('{price}', formatPrice(video.price))
+        .replace('{method}', methodName || '');
     const sep = base.includes('?') ? '&' : '?';
-    return base + sep + 'text=' + text;
+    return base + sep + 'text=' + encodeURIComponent(msg);
 }
 
 function normalizeTelegram(value) {
@@ -287,8 +311,8 @@ function normalizeTelegram(value) {
 
 function formatPrice(value) {
     const amount = Number(value);
-    if (!Number.isFinite(amount) || amount < 0) return '—';
-    return amount.toLocaleString(currentLang === 'pt' ? 'pt-MZ' : 'en-US') + ' MT';
+    if (!Number.isFinite(amount) || amount < 0) return '$0';
+    return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: amount % 1 ? 2 : 0, maximumFractionDigits: 2 });
 }
 
 function formatBytes(bytes) {
@@ -444,6 +468,7 @@ async function loadRemoteSettings() {
         const row = data[0];
         const next = {};
         if (row.telegram) next.telegram = row.telegram;
+        if (!next.telegram) next.telegram = DEFAULT_TELEGRAM;
         if (row.preview_seconds) next.previewSeconds = Number(row.preview_seconds) || 12;
         saveSettingsLocal(next);
         fillSettingsForm();
@@ -455,13 +480,13 @@ async function loadRemoteSettings() {
 function fillSettingsForm() {
     const telegramInput = document.getElementById('telegramInput');
     const previewSeconds = document.getElementById('previewSeconds');
-    if (telegramInput) telegramInput.value = siteSettings.telegram || '';
+    if (telegramInput) telegramInput.value = siteSettings.telegram || DEFAULT_TELEGRAM;
     if (previewSeconds) previewSeconds.value = siteSettings.previewSeconds || 12;
     applyTelegramLinks();
 }
 
 function applyTelegramLinks() {
-    const href = telegramHref(null);
+    const href = telegramBase();
     ['headerTelegram', 'heroTelegram'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -469,7 +494,7 @@ function applyTelegramLinks() {
         if (href) el.href = href;
     });
     const dashTelegram = document.getElementById('dashTelegram');
-    if (dashTelegram) dashTelegram.textContent = siteSettings.telegram || t('notSet');
+    if (dashTelegram) dashTelegram.textContent = siteSettings.telegram || DEFAULT_TELEGRAM;
 }
 
 async function verifyAdminPassword(password) {
@@ -735,13 +760,54 @@ function armPreviewLock() {
     previewTimer = setTimeout(lockNow, seconds * 1000 + 400);
 }
 
-function goToTelegram(video) {
-    const href = telegramHref(video);
+function goToTelegram(video, methodName) {
+    const href = telegramHref(video, methodName);
     if (!href) {
         alert(t('noTelegram'));
         return;
     }
     window.open(href, '_blank', 'noopener,noreferrer');
+}
+
+function payButtonHtml() {
+    return PAYMENT_METHODS.map(method =>
+        '<button type="button" class="pay-btn ' + method.cls + '" data-pay="' + method.id + '">' +
+        '<span class="pay-ico">' + method.icon + '</span>' +
+        '<span>' + method.name + '</span>' +
+        '</button>'
+    ).join('');
+}
+
+function bindPayButtons(root) {
+    if (!root) return;
+    root.querySelectorAll('[data-pay]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const method = PAYMENT_METHODS.find(m => m.id === this.dataset.pay);
+            const video = videos.find(v => String(v.id) === String(currentVideoId));
+            if (!video || !method) return;
+            closePayModal();
+            goToTelegram(video, method.name);
+        });
+    });
+}
+
+function renderPayButtons() {
+    const lists = [document.getElementById('payList'), document.getElementById('payListModal')];
+    lists.forEach(list => {
+        if (!list) return;
+        list.innerHTML = payButtonHtml();
+        bindPayButtons(list);
+    });
+}
+
+function openPayModal() {
+    const modal = document.getElementById('payModal');
+    if (modal) modal.style.display = 'grid';
+}
+
+function closePayModal() {
+    const modal = document.getElementById('payModal');
+    if (modal) modal.style.display = 'none';
 }
 
 function openPlayer(id) {
@@ -888,7 +954,7 @@ uploadForm.addEventListener('submit', async function(e) {
 
 document.getElementById('settingsForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const telegram = document.getElementById('telegramInput').value.trim();
+    const telegram = document.getElementById('telegramInput').value.trim() || DEFAULT_TELEGRAM;
     const previewSeconds = Number(document.getElementById('previewSeconds').value) || 12;
     saveSettingsLocal({ telegram, previewSeconds });
     try {
@@ -926,14 +992,10 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
-document.getElementById('btnInterest').addEventListener('click', function() {
-    const video = videos.find(v => String(v.id) === String(currentVideoId));
-    goToTelegram(video);
-});
-
-document.getElementById('btnLockTelegram').addEventListener('click', function() {
-    const video = videos.find(v => String(v.id) === String(currentVideoId));
-    goToTelegram(video);
+document.getElementById('btnLockTelegram').addEventListener('click', openPayModal);
+document.getElementById('btnClosePay').addEventListener('click', closePayModal);
+document.getElementById('payModal').addEventListener('click', function(e) {
+    if (e.target === this) closePayModal();
 });
 
 searchInput.addEventListener('input', function() {
@@ -986,6 +1048,7 @@ window.addEventListener('hashchange', maybeOpenSecretAdmin);
 maybeOpenSecretAdmin();
 
 applyLanguage();
+renderPayButtons();
 applyTelegramLinks();
 registerVisitor('home', null);
 startVisitorUpdates();

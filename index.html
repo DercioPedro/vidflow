@@ -194,8 +194,8 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label data-i18n="labelPrice">Price (MT)</label>
-                            <input type="number" id="videoPrice" min="0" step="1" required placeholder="1500" />
+                            <label data-i18n="labelPrice">Price (USD)</label>
+                            <input type="number" id="videoPrice" min="0" step="0.01" required placeholder="25" />
                         </div>
                     </div>
                     <div class="form-group">
@@ -242,13 +242,13 @@
                             <p class="hero-kicker" data-i18n="previewEnded">Preview ended</p>
                             <h3 data-i18n="buyFull">Get the full video</h3>
                             <p data-i18n="buyFullLead">The original file is delivered by the owner on Telegram.</p>
-                            <button type="button" class="btn-gold" id="btnLockTelegram" data-i18n="imInterested">I'm interested</button>
+                            <button type="button" class="btn-gold" id="btnLockTelegram" data-i18n="choosePay">Choose payment method</button>
                         </div>
                     </div>
                 </div>
                 <h2 id="playerTitle">Video title</h2>
                 <div class="player-meta-block">
-                    <div class="player-price" id="playerPriceInline">0 MT</div>
+                    <div class="player-price" id="playerPriceInline">$0</div>
                     <p class="player-size" id="playerSize">—</p>
                 </div>
                 <p id="playerDesc">Description</p>
@@ -262,18 +262,27 @@
 
             <aside class="buy-panel">
                 <p class="hero-kicker" data-i18n="buyNow">Buy now</p>
-                <div class="buy-price" id="playerPrice">0 MT</div>
+                <div class="buy-price" id="playerPrice">$0</div>
                 <p class="buy-size" id="buySize">—</p>
-                <p class="buy-copy" data-i18n="buyCopy">Payment and original file delivery via Telegram. No download on this page.</p>
-                <button type="button" class="btn-telegram-cta" id="btnInterest" data-i18n="imInterested">I'm interested</button>
+                <p class="buy-copy" data-i18n="buyCopy">Choose a payment method. You will be redirected to Telegram with your order details.</p>
+                <div class="pay-list" id="payList"></div>
                 <ul class="buy-points">
-                    <li data-i18n="pointPrice">Price set by the owner</li>
+                    <li data-i18n="pointPrice">Price in USD</li>
                     <li data-i18n="pointNoDl">No public download</li>
-                    <li data-i18n="pointTg">Direct deal on Telegram</li>
+                    <li data-i18n="pointTg">Order completed on Telegram</li>
                 </ul>
             </aside>
         </div>
     </main>
+
+    <div class="modal" id="payModal" style="display: none;">
+        <div class="modal-card pay-modal-card">
+            <button type="button" class="modal-close" id="btnClosePay" aria-label="Close">×</button>
+            <h3 data-i18n="payTitle">Choose Payment Method</h3>
+            <p class="pay-lead" data-i18n="payLead">Select your preferred payment method:</p>
+            <div class="pay-list" id="payListModal"></div>
+        </div>
+    </div>
 
     <div class="modal" id="editModal" style="display: none;">
         <div class="modal-card">
@@ -298,8 +307,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="labelPrice">Price (MT)</label>
-                        <input type="number" id="editPrice" min="0" step="1" required />
+                        <label data-i18n="labelPrice">Price (USD)</label>
+                        <input type="number" id="editPrice" min="0" step="0.01" required />
                     </div>
                 </div>
                 <div class="modal-actions">

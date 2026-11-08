@@ -242,7 +242,10 @@
                             <p class="hero-kicker" data-i18n="previewEnded">Preview ended</p>
                             <h3 data-i18n="buyFull">Get the full video</h3>
                             <p data-i18n="buyFullLead">The original file is delivered by the owner on Telegram.</p>
-                            <button type="button" class="btn-gold" id="btnLockTelegram" data-i18n="choosePay">Choose payment method</button>
+                            <div class="overlay-actions">
+                                <button type="button" class="btn-pay-cta" id="btnLockTelegram" data-i18n="choosePay">Choose payment method</button>
+                                <button type="button" class="btn-replay" id="btnReplayPreview" data-i18n="replayPreview">Replay preview</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -252,22 +255,15 @@
                     <p class="player-size" id="playerSize">—</p>
                 </div>
                 <p id="playerDesc">Description</p>
-                <p id="playerCategory">Category: <span></span></p>
+                <div class="hidden-price" id="playerPrice" hidden>$0</div>
+                <div class="hidden-price" id="buySize" hidden>—</div>
 
                 <div class="player-actions">
-                    <button type="button" id="btnBack" class="btn-secondary" data-i18n="backCatalog">Back to catalog</button>
+                    <button type="button" id="btnBack" class="btn-back-cta" data-i18n="backCatalog">Back to catalog</button>
+                    <button type="button" id="btnChoosePay" class="btn-pay-cta" data-i18n="choosePay">Choose payment method</button>
                     <button type="button" id="btnDelete" class="btn-delete" style="display: none;" data-i18n="deleteVideo">Delete video</button>
                 </div>
             </div>
-
-            <aside class="buy-panel">
-                <p class="hero-kicker" data-i18n="buyNow">Buy now</p>
-                <div class="buy-price" id="playerPrice">$0</div>
-                <p class="buy-size" id="buySize">—</p>
-                <p class="buy-copy" data-i18n="buyCopy">Choose a payment method. You will be redirected to Telegram with your order details.</p>
-                <div class="pay-list" id="payList"></div>
-
-            </aside>
         </div>
     </main>
 

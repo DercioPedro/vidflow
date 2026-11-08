@@ -75,6 +75,7 @@ const I18N = {
         buyFullLead: 'The original file is delivered by the owner on Telegram.',
         imInterested: "I'm interested",
         choosePay: 'Choose payment method',
+        replayPreview: 'Replay preview',
         payTitle: 'Choose Payment Method',
         payLead: 'Select your preferred payment method:',
         buyNow: 'Buy now',
@@ -170,6 +171,7 @@ const I18N = {
         buyFullLead: 'O ficheiro original e entregue pelo proprietario no Telegram.',
         imInterested: 'Tenho interesse',
         choosePay: 'Escolher metodo de pagamento',
+        replayPreview: 'Repetir previa',
         payTitle: 'Escolha o metodo de pagamento',
         payLead: 'Selecione o metodo de pagamento preferido:',
         buyNow: 'Adquirir agora',
@@ -819,12 +821,22 @@ function bindPayButtons(root) {
 }
 
 function renderPayButtons() {
-    const lists = [document.getElementById('payList'), document.getElementById('payListModal')];
+    const lists = [document.getElementById('payListModal')];
     lists.forEach(list => {
         if (!list) return;
         list.innerHTML = payButtonHtml();
         bindPayButtons(list);
     });
+}
+
+function replayPreview() {
+    if (!playerVideo) return;
+    closePayModal();
+    playerVideo.currentTime = 0;
+    playerVideo.controls = true;
+    lockOverlay.classList.remove('is-visible');
+    playerVideo.play().catch(() => {});
+    armPreviewLock();
 }
 
 function openPayModal() {
@@ -851,7 +863,7 @@ function openPlayer(id) {
     playerVideo.load();
     playerTitle.textContent = video.title;
     playerDesc.textContent = video.description || tPublic('noDesc');
-    playerCategory.innerHTML = tPublic('categoryLabel') + '<span>' + escapeHtml(video.category) + '</span>';
+    closePayModal();
     const priceText = formatPrice(video.price);
     const sizeText = formatBytes(video.size);
     playerPrice.textContent = priceText;
@@ -1020,6 +1032,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 document.getElementById('btnLockTelegram').addEventListener('click', openPayModal);
+document.getElementById('btnChoosePay').addEventListener('click', openPayModal);
+document.getElementById('btnReplayPreview').addEventListener('click', replayPreview);
 document.getElementById('btnClosePay').addEventListener('click', closePayModal);
 document.getElementById('payModal').addEventListener('click', function(e) {
     if (e.target === this) closePayModal();

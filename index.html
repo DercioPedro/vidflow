@@ -49,10 +49,6 @@
             <a id="headerTelegram" class="nav-telegram" href="#" target="_blank" rel="noopener noreferrer" style="display: none;">Telegram</a>
             <button type="button" id="btnAdminPanel" class="nav-link" style="display: none;" data-i18n="navPanel">Panel</button>
             <button type="button" id="btnLogout" style="display: none;" data-i18n="navLogout">Log out</button>
-            <div class="lang-switch" id="langSwitch">
-                <button type="button" data-lang="en" class="is-active">EN</button>
-                <button type="button" data-lang="pt">PT</button>
-            </div>
             <div class="live-chip" id="liveChip">
                 <span class="live-dot"></span>
                 <span id="visitorCountGlobal">0</span>
@@ -123,6 +119,10 @@
                     <h2 data-i18n="adminTitle">Owner panel</h2>
                 </div>
                 <div class="admin-tabs">
+                    <div class="lang-switch" id="langSwitch">
+                        <button type="button" data-lang="en" class="is-active">EN</button>
+                        <button type="button" data-lang="pt">PT</button>
+                    </div>
                     <button type="button" class="tab-btn is-active" data-tab="dash" data-i18n="tabDash">Overview</button>
                     <button type="button" class="tab-btn" data-tab="videos" data-i18n="tabVideos">Videos</button>
                     <button type="button" class="tab-btn" data-tab="upload" data-i18n="tabUpload">Publish</button>

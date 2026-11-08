@@ -210,27 +210,54 @@ const I18N = {
 let currentLang = localStorage.getItem(LANG_KEY) || 'en';
 if (currentLang !== 'pt') currentLang = 'en';
 
-function t(key) {
+function tPublic(key) {
+    return I18N.en[key] || key;
+}
+
+function tAdmin(key) {
     return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
 }
 
+function t(key) {
+    return isAdmin ? tAdmin(key) : tPublic(key);
+}
+
+function applyI18n(root, dict) {
+    if (!root) return;
+    root.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = dict[el.getAttribute('data-i18n')] || el.textContent;
+    });
+    root.querySelectorAll('[data-i18n-html]').forEach(el => {
+        el.innerHTML = dict[el.getAttribute('data-i18n-html')] || el.innerHTML;
+    });
+    root.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.setAttribute('placeholder', dict[el.getAttribute('data-i18n-placeholder')] || el.getAttribute('placeholder'));
+    });
+}
+
 function applyLanguage() {
-    document.documentElement.lang = currentLang === 'pt' ? 'pt' : 'en';
-    document.title = t('pageTitle');
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        el.textContent = t(el.getAttribute('data-i18n'));
-    });
-    document.querySelectorAll('[data-i18n-html]').forEach(el => {
-        el.innerHTML = t(el.getAttribute('data-i18n-html'));
-    });
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
-    });
+    document.documentElement.lang = 'en';
+    document.title = I18N.en.pageTitle;
+    applyI18n(document.getElementById('pageHome'), I18N.en);
+    applyI18n(document.querySelector('header'), I18N.en);
+    applyI18n(document.querySelector('footer'), I18N.en);
+    applyI18n(document.getElementById('pagePlayer'), I18N.en);
+    applyI18n(document.getElementById('pageLogin'), I18N.en);
+    applyI18n(document.getElementById('payModal'), I18N.en);
+    applyI18n(document.getElementById('pageAdmin'), I18N[currentLang] || I18N.en);
+    applyI18n(document.getElementById('editModal'), I18N[currentLang] || I18N.en);
+    if (isAdmin) {
+        ['btnAdminPanel', 'btnLogout'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const key = el.getAttribute('data-i18n');
+            if (key) el.textContent = (I18N[currentLang] || I18N.en)[key] || el.textContent;
+        });
+    }
+    if (previewTag) previewTag.textContent = I18N.en.previewTag.replace('{n}', Number(siteSettings.previewSeconds) || 12);
     document.querySelectorAll('#langSwitch button').forEach(btn => {
         btn.classList.toggle('is-active', btn.dataset.lang === currentLang);
     });
-    const seconds = Number(siteSettings.previewSeconds) || 12;
-    if (previewTag) previewTag.textContent = t('previewTag').replace('{n}', seconds);
     renderFilters();
     renderVideos();
     renderAdminVideos();
@@ -290,7 +317,7 @@ function telegramHref(video, methodName) {
     const base = telegramBase();
     if (!base) return '';
     if (!video) return base;
-    const msg = t('telegramInterest')
+    const msg = I18N.en.telegramInterest
         .replace('{title}', video.title || '')
         .replace('{category}', video.category || '')
         .replace('{size}', formatBytes(video.size))
@@ -317,7 +344,7 @@ function formatPrice(value) {
 
 function formatBytes(bytes) {
     const size = Number(bytes);
-    if (!Number.isFinite(size) || size <= 0) return t('unknownSize');
+    if (!Number.isFinite(size) || size <= 0) return tPublic('unknownSize');
     if (size < 1024) return size + ' B';
     if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
     return (size / (1024 * 1024)).toFixed(1) + ' MB';
@@ -541,7 +568,7 @@ async function loadVideos() {
         videos = (data || []).map(video => ({
             id: video.id,
             title: video.title,
-            description: video.description || t('noDesc'),
+            description: video.description || tPublic('noDesc'),
             category: video.category || 'Geral',
             url: video.url,
             date: video.date || randomDate(),
@@ -555,7 +582,7 @@ async function loadVideos() {
         loadingIndicator.style.display = 'none';
         hydrateVideoSizes();
     } catch (error) {
-        loadingIndicator.innerHTML = '<h3>' + t('loadError') + '</h3><p>' + escapeHtml(error.message) + '</p>';
+        loadingIndicator.innerHTML = '<h3>' + tPublic('loadError') + '</h3><p>' + escapeHtml(error.message) + '</p>';
     }
 }
 
@@ -582,7 +609,7 @@ function renderFilters() {
     if (!categoryFilters) return;
     const cats = ['all', ...Array.from(new Set(videos.map(v => v.category).filter(Boolean)))];
     categoryFilters.innerHTML = cats.map(cat => {
-        const label = cat === 'all' ? t('all') : cat;
+        const label = cat === 'all' ? tPublic('all') : cat;
         return '<button type="button" class="filter-chip' + (cat === activeCategory ? ' is-active' : '') + '" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(label) + '</button>';
     }).join('');
     categoryFilters.querySelectorAll('.filter-chip').forEach(btn => {
@@ -598,7 +625,7 @@ function renderVideos() {
     if (!videoGrid) return;
     const list = filteredVideos();
     if (list.length === 0) {
-        videoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><h3>' + t('emptyFilter') + '</h3></div>';
+        videoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><h3>' + tPublic('emptyFilter') + '</h3></div>';
         return;
     }
     videoGrid.innerHTML = list.map((video, index) => `
@@ -673,7 +700,7 @@ async function saveVideoToSupabase(title, description, category, price, file) {
     const { data: urlData } = sb.storage.from('videos').getPublicUrl(fileName);
     const videoData = {
         title: title,
-        description: description || t('noDesc'),
+        description: description || tPublic('noDesc'),
         category: category || 'Geral',
         url: urlData.publicUrl,
         date: randomDate(),
@@ -745,7 +772,7 @@ function clearPreviewLock() {
 function armPreviewLock() {
     clearPreviewLock();
     const seconds = Number(siteSettings.previewSeconds) || 12;
-    previewTag.textContent = t('previewTag').replace('{n}', seconds);
+    previewTag.textContent = tPublic('previewTag').replace('{n}', seconds);
     const lockNow = function() {
         playerVideo.pause();
         playerVideo.controls = false;
@@ -763,7 +790,7 @@ function armPreviewLock() {
 function goToTelegram(video, methodName) {
     const href = telegramHref(video, methodName);
     if (!href) {
-        alert(t('noTelegram'));
+        alert(tPublic('noTelegram'));
         return;
     }
     window.open(href, '_blank', 'noopener,noreferrer');
@@ -813,7 +840,7 @@ function closePayModal() {
 function openPlayer(id) {
     const video = videos.find(v => String(v.id) === String(id));
     if (!video) {
-        alert(t('notFound'));
+        alert(tPublic('notFound'));
         return;
     }
     currentVideoId = id;
@@ -823,8 +850,8 @@ function openPlayer(id) {
     playerVideo.setAttribute('controlsList', 'nodownload noplaybackrate noremoteplayback');
     playerVideo.load();
     playerTitle.textContent = video.title;
-    playerDesc.textContent = video.description || t('noDesc');
-    playerCategory.innerHTML = t('categoryLabel') + '<span>' + escapeHtml(video.category) + '</span>';
+    playerDesc.textContent = video.description || tPublic('noDesc');
+    playerCategory.innerHTML = tPublic('categoryLabel') + '<span>' + escapeHtml(video.category) + '</span>';
     const priceText = formatPrice(video.price);
     const sizeText = formatBytes(video.size);
     playerPrice.textContent = priceText;
@@ -844,7 +871,7 @@ function loginAdmin() {
     btnLogout.style.display = 'inline-flex';
     showPage('admin');
     switchTab('dash');
-    renderAdminVideos();
+    applyLanguage();
     fillSettingsForm();
 }
 
@@ -853,7 +880,7 @@ function logoutAdmin() {
     btnAdminPanel.style.display = 'none';
     btnLogout.style.display = 'none';
     showPage('home');
-    renderVideos();
+    applyLanguage();
 }
 
 function switchTab(name) {

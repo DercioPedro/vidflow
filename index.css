@@ -32,6 +32,7 @@ body {
         var(--bg);
     color: var(--text);
     font-family: 'Outfit', sans-serif;
+    font-size: 17px;
     overflow-x: hidden;
 }
 
@@ -127,13 +128,13 @@ header {
 
 .logo-text strong {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
+    font-size: 24px;
     letter-spacing: 0.4px;
 }
 
 .logo-text small {
     color: var(--muted);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 1.4px;
     text-transform: uppercase;
 }
@@ -153,7 +154,7 @@ nav {
     padding: 8px 14px;
     border-radius: 999px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
     font-family: inherit;
 }
 
@@ -193,7 +194,7 @@ nav {
 .nav-telegram {
     color: #ffe0d6;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 16px;
     padding: 8px 14px;
     border: 1px solid rgba(255, 77, 109, 0.45);
     border-radius: 999px;
@@ -209,7 +210,7 @@ nav {
     background: rgba(255, 45, 85, 0.12);
     border: 1px solid rgba(255, 77, 109, 0.35);
     color: #ff8a9b;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .live-dot {
@@ -240,13 +241,13 @@ main {
     color: var(--gold);
     letter-spacing: 2.4px;
     text-transform: uppercase;
-    font-size: 12px;
+    font-size: 13px;
     margin-bottom: 12px;
 }
 
 .hero h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(38px, 6vw, 72px);
+    font-size: clamp(42px, 6.4vw, 78px);
     line-height: 0.95;
     font-weight: 600;
     margin-bottom: 16px;
@@ -255,7 +256,7 @@ main {
 .hero-lead {
     max-width: 560px;
     color: var(--muted);
-    font-size: 17px;
+    font-size: 19px;
     line-height: 1.6;
     margin-bottom: 28px;
 }
@@ -280,13 +281,13 @@ main {
 
 .hero-stats strong {
     display: block;
-    font-size: 28px;
+    font-size: 32px;
     font-family: 'Cormorant Garamond', serif;
 }
 
 .hero-stats span {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
@@ -304,9 +305,7 @@ main {
     border-radius: 999px;
     padding: 13px 22px;
     font-weight: 600;
-    font-size: 15px;
-    text-decoration: none;
-    cursor: pointer;
+    font-size: 16px;
     font-family: inherit;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
@@ -331,7 +330,7 @@ main {
     text-decoration: none;
     cursor: pointer;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 16px;
 }
 
 .btn-ghost:hover,
@@ -480,7 +479,7 @@ main {
 }
 
 .video-info h3 {
-    font-size: 16px;
+    font-size: 18px;
     margin-bottom: 8px;
     white-space: nowrap;
     overflow: hidden;
@@ -490,13 +489,13 @@ main {
 .card-price {
     color: #ffd08a;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 17px;
     margin-bottom: 4px;
 }
 
 .card-size {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 14px;
     margin-bottom: 10px;
 }
 
@@ -504,7 +503,7 @@ main {
     display: flex;
     justify-content: space-between;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .category {
@@ -762,6 +761,7 @@ main {
 
 .player-main h2 {
     margin: 18px 0 8px;
+    font-size: 34px;
 }
 
 .player-meta-block {
@@ -770,14 +770,14 @@ main {
 
 .player-price {
     color: #ffd08a;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 700;
 }
 
 .player-size,
 .buy-size {
     color: var(--muted);
-    font-size: 13px;
+    font-size: 15px;
     margin-top: 4px;
 }
 
@@ -825,7 +825,7 @@ main {
 
 .buy-price {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 42px;
+    font-size: 46px;
     margin: 8px 0 10px;
 }
 
@@ -856,7 +856,7 @@ main {
     padding: 13px 16px;
     color: #fff;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     text-align: left;

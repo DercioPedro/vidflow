@@ -103,7 +103,7 @@ const I18N = {
         saveError: 'Could not save: ',
         confirmDelete: 'Delete this video?',
         confirmLogout: 'Leave the panel?',
-        telegramInterest: 'Hello Hannah,\n\nI hope you are well.\n\nI would like to buy this video:\n• Title: {title}\n• Category: {category}\n• Size: {size}\n• Price: {price}\n• Payment method: {method}\n\nPlease send me the payment details to complete the order.\n\nThank you.',
+        telegramInterest: 'Hello Hannah,\n\nI hope you are well.\n\nI would like to buy this video:\n• Title: {title}\n• Category: {category}\n• Price: {price}\n• Payment method: {method}\n\nPlease send me the payment details to complete the order.\n\nThank you.',
         previewTag: '{n}s preview',
         noDesc: 'No description',
         categoryLabel: 'Category: ',
@@ -199,7 +199,7 @@ const I18N = {
         saveError: 'Erro ao guardar: ',
         confirmDelete: 'Tem certeza que deseja excluir este video?',
         confirmLogout: 'Deseja sair do painel?',
-        telegramInterest: 'Ola Hannah,\n\nEspero que esteja bem.\n\nQuero comprar este video:\n• Titulo: {title}\n• Categoria: {category}\n• Tamanho: {size}\n• Preco: {price}\n• Metodo de pagamento: {method}\n\nPor favor envie os dados de pagamento para eu concluir o pedido.\n\nObrigado.',
+        telegramInterest: 'Ola Hannah,\n\nEspero que esteja bem.\n\nQuero comprar este video:\n• Titulo: {title}\n• Categoria: {category}\n• Preco: {price}\n• Metodo de pagamento: {method}\n\nPor favor envie os dados de pagamento para eu concluir o pedido.\n\nObrigado.',
         previewTag: 'Preview de {n}s',
         noDesc: 'Sem descricao',
         categoryLabel: 'Categoria: ',
@@ -322,7 +322,6 @@ function telegramHref(video, methodName) {
     const msg = I18N.en.telegramInterest
         .replace('{title}', video.title || '')
         .replace('{category}', video.category || '')
-        .replace('{size}', formatBytes(video.size))
         .replace('{price}', formatPrice(video.price))
         .replace('{method}', methodName || '');
     const sep = base.includes('?') ? '&' : '?';
@@ -402,8 +401,6 @@ const playerDesc = document.getElementById('playerDesc');
 const playerCategory = document.getElementById('playerCategory');
 const playerPrice = document.getElementById('playerPrice');
 const playerPriceInline = document.getElementById('playerPriceInline');
-const playerSize = document.getElementById('playerSize');
-const buySize = document.getElementById('buySize');
 const lockOverlay = document.getElementById('lockOverlay');
 const previewTag = document.getElementById('previewTag');
 const searchInput = document.getElementById('searchInput');
@@ -420,6 +417,10 @@ function showPage(name) {
     if (name !== 'player') {
         playerVideo.pause();
         clearPreviewLock();
+    } else {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }
 }
 
@@ -640,7 +641,6 @@ function renderVideos() {
             <div class="video-info">
                 <h3>${escapeHtml(video.title)}</h3>
                 <div class="card-price">${escapeHtml(formatPrice(video.price))}</div>
-                <div class="card-size">${escapeHtml(formatBytes(video.size))}</div>
                 <div class="meta">
                     <span>${escapeHtml(video.date)}</span>
                     <span class="category">${escapeHtml(video.category)}</span>
@@ -865,13 +865,16 @@ function openPlayer(id) {
     playerDesc.textContent = video.description || tPublic('noDesc');
     closePayModal();
     const priceText = formatPrice(video.price);
-    const sizeText = formatBytes(video.size);
     playerPrice.textContent = priceText;
     if (playerPriceInline) playerPriceInline.textContent = priceText;
-    if (playerSize) playerSize.textContent = sizeText;
-    if (buySize) buySize.textContent = sizeText;
     btnDelete.style.display = isAdmin ? 'inline-flex' : 'none';
     showPage('player');
+    window.scrollTo(0, 0);
+    requestAnimationFrame(function() {
+        window.scrollTo(0, 0);
+        const stage = document.getElementById('videoStage');
+        if (stage) stage.scrollIntoView({ block: 'start', behavior: 'auto' });
+    });
     registerVisitor('player', id);
     playerVideo.play().catch(() => {});
     armPreviewLock();
